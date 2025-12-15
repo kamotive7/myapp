@@ -1,3 +1,5 @@
+<?php $this->assign('title', 'ログイン') ?>
+
 <h1>Login</h1>
 
 <?= $this->Form->create(null, ['url' => ['controller' => 'Login', 'action' => 'auth']]) ?>
