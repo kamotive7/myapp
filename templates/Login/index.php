@@ -7,3 +7,7 @@
     <?=  $this->Form->control('password', ['type' => 'password', 'label' => 'パスワード']) ?>
     <?=  $this->Form->button('ログイン') ?>
 <?= $this->Form->end() ?>
+
+<p>
+    <?=  $this->Html->link('アカウント作成', ['action' => 'register']) ?>
+</p>

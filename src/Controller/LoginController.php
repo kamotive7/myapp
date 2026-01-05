@@ -63,6 +63,70 @@ class LoginController extends AppController
         return $this->redirect(['action' => 'index']);
     }
 
+    //POST/login/create - アカウント作成処理
+    public function create()
+    {
+        if(!$this->request->is('post')) {
+            return $this->redirect(['action' => 'register']);
+        }
+
+        $data = $this->request->getData();
+
+        //バリデーション
+        $username = $data['username'] ?? '';
+        $password = $data['password'] ?? '';
+        $passwordConfirm = $data['password_confirm'] ?? '';
+        $name = $data['name'] ?? '';
+
+        //入力チェック
+        if(empty($username) || empty($password) || empty($name)) {
+            $this->Flash->error('すべての項目を入力してください。');
+            return $this->redirect(['action' => 'register']);
+        }
+        
+        //パスワード確認
+        if($password !== $passwordConfirm) {
+            $this->Flash->error('パスワードが一致しません。');
+            return $this->redirect(['action' => 'register']);
+        }
+
+        //ユーザー名の重複チェック
+        $exsistingUser = $this->Users
+            ->find()
+            ->where(['username' => $username])
+            ->first();
+
+        if($exsistingUser) {
+            $this->Flash->error('このユーザー名は既に使用されています。');
+            return $this->redirect(['action' => 'register']);
+        }
+
+        //ユーザー作成
+        $user = $this->Users->newEmptyEntity();
+        $user = $this->Users->patchEntity($user, [
+            'username' => $username,
+            'password' => $password,
+            'name' => $name,
+        ]);
+
+        if($this->Users->save($user)) {
+            $this->Flash->success('アカウントを作成しました。ログインしてください。');
+            return $this->redirect(['action' => 'index']);
+        }
+
+        $this->Flash->error('アカウント作成に失敗しました。');
+        return $this->redirect(['action' => 'register']);
+    }
+
+    //GET/login/register - アカウント作成
+    public function register()
+    {
+        //ログインしてるならダッシュボードへ
+        if($this->request->is('post')) {
+            return $this->redirect(['controller' => 'Dashboard', 'action' => 'index']);
+        }
+    }
+
     public function logout()
     {
         $this->request->getSession()->destroy();
