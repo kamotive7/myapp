@@ -54,25 +54,22 @@ class DashboardController extends AppController
 
     public function addSubtask($parentId = null)
     {
-        //1.POSTメソッドのみ許可（セキュリティ）
+        //POSTメソッドのみ許可（セキュリティ）
         $this->request->allowMethod(['post']);
 
-        // 2.親タスクの存在確認（エラー防止）
+        //親タスクの存在確認（エラー防止)
         $parentTask = $this->Tasks->get($parentId);
 
-        // 3.新しい空のタスクエンティティを作成
+        //新しい空のタスクエンティティを作成
         $subtask = $this->Tasks->newEmptyEntity();
 
-        // 4.フォームから送られたデータを取得
-        $data = $this->request->getData();
+        //フォームデータ全体を反映（title, description, due_date などが一気にセットされる）
+        $subtask = $this->Tasks->patchEntity($subtask, $this->request->getData());
 
-        // 5.parent_idを追加
-        $data['parent_id'] = $parentId; 
+        //親IDを直接セット
+        $subtask->parent_id = $parentId;
 
-        // 6.データをエンティティにセット
-        $subtask = $this->Tasks->patchEntity($subtask, $data);
-
-        //7.保存
+        //保存
         if ($this->Tasks->save($subtask)) {
             $this->Flash->success('サブタスクを追加しました。');
         } else {
@@ -107,7 +104,7 @@ class DashboardController extends AppController
         //フォームから送られたデータで更新
         $task = $this->Tasks->patchEntity($task, $this->request->getData());
 
-        if($this->Tasks->save($task)) {
+        if ($this->Tasks->save($task)) {
             $this->Flash->success('タスクを更新しました。');
         } else {
             $this->Flash->error('更新に失敗しました。');

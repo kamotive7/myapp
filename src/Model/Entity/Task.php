@@ -28,8 +28,10 @@ class Task extends Entity
      */
     protected array $_accessible = [
         'title' => true,
+        'description' => true,
         'due_date' => true,
         'completed' => true,
+        'parent_id' => true,
         'created' => true,
         'modified' => true,
     ];
