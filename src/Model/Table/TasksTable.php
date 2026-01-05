@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Model\Table;
@@ -44,6 +45,18 @@ class TasksTable extends Table
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
+
+        //親タスクとの関連
+        $this->belongsTo('ParentTasks', [
+            'className' => 'Tasks',
+            'foreignKey' => 'parent_id',
+        ]);
+
+        //子タスク（サブタスク）との関連
+        $this->hasMany('ChildTasks', [
+            'className' => 'Tasks',
+            'foreignKey' => 'parent_id',
+        ]);
     }
 
     /**
@@ -54,6 +67,10 @@ class TasksTable extends Table
      */
     public function validationDefault(Validator $validator): Validator
     {
+        $validator
+            ->integer('id')
+            ->allowEmptyString('id', null, 'create');
+            
         $validator
             ->scalar('title')
             ->maxLength('title', 255)
