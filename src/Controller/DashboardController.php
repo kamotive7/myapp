@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Model\Table\TasksTable;
+use Cake\I18n\FrozenDate;
+use Cake\I18n\FrozenTime;
 
 class DashboardController extends AppController
 {
@@ -39,6 +41,12 @@ class DashboardController extends AppController
 
         $this->set(compact('tasks'));
 
+        // ダッシュボード用の統計データ
+        $this->set('statistics', $this->getStatistics());
+
+        //カレンダー用のタスクデータ
+        $this->set('calendarTasks', $this->getCalendarTasks());
+
         //タスク追加処理
         if ($this->request->is('post')) {
             $task = $this->Tasks->newEmptyEntity();
@@ -50,6 +58,89 @@ class DashboardController extends AppController
             }
             $this->Flash->error('タスクの追加に失敗しました。');
         }
+    }
+
+    private function getStatistics()
+    {
+        $allTasks = $this->Tasks->find('all')->toArray();
+        $now = new FrozenTime();
+        $oneMonthLater = $now->addMonths(1);
+
+        // 基本統計
+        $totalTasks = count($allTasks);
+        $completedTasks = count(array_filter($allTasks, fn($task) => $task->completed));
+        $incompleteTasks = $totalTasks - $completedTasks;
+
+        // 期限超過タスク
+        $overdueTasks = count(array_filter($allTasks, function($task) use ($now) {
+            return !$task->completed && $task->due_date && $task->due_date < $now;
+        }));
+
+        // 今後一か月のタスク（完了ステータス別）
+        $nextMonthTasks = array_filter($allTasks, function ($task) use ($now, $oneMonthLater) {
+            return $task->due_date && $task->due_date >= $now && $task->due_date <= $oneMonthLater;
+        });
+        $nextMonthCompleted = count(array_filter($nextMonthTasks, fn($task) => $task->completed));
+        $nextMonthIncomplete = count($nextMonthTasks) - $nextMonthCompleted;
+
+        //棒グラフ用データ
+        $today = $now->startOfDay();
+        $tomorrow = $today->addDays(1);
+        $nextWeekStart = $today->addDays(1);
+        $nextWeekEnd = $today->addWeeks(1);
+
+        $recentAssigned = count(array_filter($allTasks, function ($task) use ($now) {
+            return $task->created >= $now->subDays(7);
+        }));
+
+        $todayTasks = count(array_filter($allTasks, function ($task) use ($today, $tomorrow) {
+            return $task->due_date && $task->due_date >= $today && $task->due_date < $tomorrow;
+        }));
+
+        $nextWeekTasks = count(array_filter($allTasks, function ($task) use ($nextWeekStart, $nextWeekEnd) {
+            return $task->due_date && $task->due_date >= $nextWeekStart && $task->due_date < $nextWeekEnd;
+        }));
+
+        $laterTasks = count(array_filter($allTasks, function ($task) use ($nextWeekEnd) {
+            return !$task->due_date || $task->due_date >= $nextWeekEnd;
+        }));
+
+        return [
+            'total' => $totalTasks,
+            'completed' => $completedTasks,
+            'incomplete' => $incompleteTasks,
+            'overdue' => $overdueTasks,
+            'nextMonthTotal' => count($nextMonthTasks),
+            'nextMonthCompleted' => $nextMonthCompleted,
+            'nextMonghIncomplete' => $nextMonthIncomplete,
+            'barChart' => [
+                'recentAssigned' => $recentAssigned,
+                'today' => $todayTasks,
+                'nextWeek' => $nextWeekTasks,
+                'later' => $laterTasks
+            ]
+        ];
+    }
+
+    private function getCalendarTasks()
+    {
+        $tasks = $this->Tasks->find('all', [
+            'contain' => ['ChildTasks'],
+            'order' => ['Tasks.due_date' => 'ASC']
+        ])->toArray();
+
+        $calendarData = [];
+        foreach ($tasks as $task) {
+            if ($task->due_date) {
+                $date = $task->due_date->format('Y-m-d');
+                if (!isset($calendarData[$date])) {
+                    $calendarData[$date] = [];
+                }
+                $calendarData[$date][] = $task;
+            }
+        }
+
+        return $calendarData;
     }
 
     public function addSubtask($parentId = null)
