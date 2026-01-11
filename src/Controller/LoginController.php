@@ -78,7 +78,7 @@ class LoginController extends AppController
         $passwordConfirm = $data['password_confirm'] ?? '';
         $name = $data['name'] ?? '';
 
-        //入力チェック
+        // 入力値チェック
         if(empty($username) || empty($password) || empty($name)) {
             $this->Flash->error('すべての項目を入力してください。');
             return $this->redirect(['action' => 'register']);
