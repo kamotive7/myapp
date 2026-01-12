@@ -30,13 +30,21 @@ class DashboardController extends AppController
             ]);
         }
 
+        // ユーザー情報
+        $user = $session->read('user');
+
+        // 今日の日付
+        $today = FrozenTime::now();
+
+        $this->set(compact('user', 'today'));
+
         //ログインユーザ情報をViewに渡す
         $this->set('user', $session->read('user'));
 
         $tasks = $this->Tasks->find('all', [
             'conditions' => ['Tasks.parent_id IS' => null],
             'contain' => ['ChildTasks'],
-            'order' => ['Tasks.due_date' => 'ASC', 'Tasks.created' => 'DESC']
+            'order' => ['Tasks.end_date' => 'ASC', 'Tasks.created' => 'DESC']
         ]);
 
         $this->set(compact('tasks'));
@@ -50,6 +58,15 @@ class DashboardController extends AppController
         //タスク追加処理
         if ($this->request->is('post')) {
             $task = $this->Tasks->newEmptyEntity();
+            $data = $this->request->getData();
+
+            //end_dateが設定されていてstart_dateが未設定の場合、3日前をstart_dateに設定
+            if(!empty($data['end_date']) && empty($data['start_date'])) {
+                $endDate = new \DateTime($data['end_date']);
+                $endDate->modify('-3 days');
+                $data['start_date'] = $endDate->format('Y-m-d');
+            }
+
             $task = $this->Tasks->patchEntity($task, $this->request->getData());
 
             if ($this->Tasks->save($task)) {
@@ -72,13 +89,13 @@ class DashboardController extends AppController
         $incompleteTasks = $totalTasks - $completedTasks;
 
         // 期限超過タスク
-        $overdueTasks = count(array_filter($allTasks, function($task) use ($now) {
-            return !$task->completed && $task->due_date && $task->due_date < $now;
+        $overdueTasks = count(array_filter($allTasks, function ($task) use ($now) {
+            return !$task->completed && $task->end_date && $task->end_date < $now;
         }));
 
         // 今後一か月のタスク（完了ステータス別）
         $nextMonthTasks = array_filter($allTasks, function ($task) use ($now, $oneMonthLater) {
-            return $task->due_date && $task->due_date >= $now && $task->due_date <= $oneMonthLater;
+            return $task->end_date && $task->end_date >= $now && $task->end_date <= $oneMonthLater;
         });
         $nextMonthCompleted = count(array_filter($nextMonthTasks, fn($task) => $task->completed));
         $nextMonthIncomplete = count($nextMonthTasks) - $nextMonthCompleted;
@@ -94,15 +111,15 @@ class DashboardController extends AppController
         }));
 
         $todayTasks = count(array_filter($allTasks, function ($task) use ($today, $tomorrow) {
-            return $task->due_date && $task->due_date >= $today && $task->due_date < $tomorrow;
+            return $task->end_date && $task->end_date >= $today && $task->end_date < $tomorrow;
         }));
 
         $nextWeekTasks = count(array_filter($allTasks, function ($task) use ($nextWeekStart, $nextWeekEnd) {
-            return $task->due_date && $task->due_date >= $nextWeekStart && $task->due_date < $nextWeekEnd;
+            return $task->end_date && $task->end_date >= $nextWeekStart && $task->end_date < $nextWeekEnd;
         }));
 
         $laterTasks = count(array_filter($allTasks, function ($task) use ($nextWeekEnd) {
-            return !$task->due_date || $task->due_date >= $nextWeekEnd;
+            return !$task->end_date || $task->end_date >= $nextWeekEnd;
         }));
 
         return [
@@ -126,13 +143,13 @@ class DashboardController extends AppController
     {
         $tasks = $this->Tasks->find('all', [
             'contain' => ['ChildTasks'],
-            'order' => ['Tasks.due_date' => 'ASC']
+            'order' => ['Tasks.end_date' => 'ASC']
         ])->toArray();
 
         $calendarData = [];
         foreach ($tasks as $task) {
-            if ($task->due_date) {
-                $date = $task->due_date->format('Y-m-d');
+            if ($task->end_date) {
+                $date = $task->end_date->format('Y-m-d');
                 if (!isset($calendarData[$date])) {
                     $calendarData[$date] = [];
                 }
@@ -154,7 +171,7 @@ class DashboardController extends AppController
         //新しい空のタスクエンティティを作成
         $subtask = $this->Tasks->newEmptyEntity();
 
-        //フォームデータ全体を反映（title, description, due_date などが一気にセットされる）
+        //フォームデータ全体を反映（title, description, end_date などが一気にセットされる）
         $subtask = $this->Tasks->patchEntity($subtask, $this->request->getData());
 
         //親IDを直接セット
