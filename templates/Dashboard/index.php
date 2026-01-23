@@ -62,7 +62,7 @@
   <!-- タスクリスト画面 -->
   <div id="list-view" class="tab-content" style="display: none;">
     <div class="task-form" style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-      <?= $this->Form->create(null, ['type' => 'post']) ?>
+      <?= $this->Form->create(null, ['type' => 'post', 'url' => ['controller' => 'Dashboard', 'action' => 'index']]) ?>
       <div style="margin-bottom: 15px;">
         <?= $this->Form->control('title', ['label' => 'タスク名', 'placeholder' => '新しいタスクを入力...', 'required' => true, 'style' => 'width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;']) ?>
       </div>
@@ -74,7 +74,7 @@
           <?= $this->Form->control('start_date', ['label' => '開始日', 'type' => 'date', 'style' => 'width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;']) ?>
         </div>
         <div>
-          <?= $this->Form->control('end_date', ['label' => '終了日（期限）', 'type' => 'date', 'style' => 'width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;']) ?>
+          <?= $this->Form->control('end_date', ['label' => '終了日（期限）', 'type' => 'date', 'style' => 'width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;', 'empty' => true]) ?>
         </div>
       </div>
       <?= $this->Form->button('タスクを追加', ['style' => 'background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;']) ?>
@@ -394,7 +394,7 @@
 
   // カレンダー機能
   const calendarTasks = <?= json_encode($calendarTasks) ?>;
-  const allTasksForGantt = <?= json_encode($tasks->toArray()) ?>;
+  const allTasksForGantt = <?= json_encode($ganttTasks) ?>;
   let currentDate = new Date();
   let currentWeekStart = new Date();
 
@@ -462,7 +462,7 @@
     let html = '<div style="min-width: 900px;">';
 
     // ヘッダー（曜日と日付）
-    html += '<div style="display: grid; grid-template-columns: 200px repeat(7, 1fr); border-bottom: 2px solid #ddd; background: #f5f5f5;">';
+    html += '<div style="display: grid; grid-template-columns: 200px repeat(7, 1fr); border-bottom: 2px solid #ddd; background: #f5f5f5; position: sticky; top: 0; z-index: 10;">';
     html += '<div style="padding: 12px; font-weight: bold; border-right: 1px solid #ddd;">タスク名</div>';
 
     const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
@@ -481,71 +481,100 @@
       // start_dateとend_dateが両方設定されている場合のみ表示
       if (!task.start_date || !task.end_date) return;
 
-      const taskStartDate = new Date(task.start_date.date);
+      const taskStartDate = new Date(task.start_date);
       taskStartDate.setHours(0, 0, 0, 0);
 
-      const taskEndDate = new Date(task.end_date.date);
+      const taskEndDate = new Date(task.end_date);
       taskEndDate.setHours(0, 0, 0, 0);
 
       // 週の範囲内かチェック
       const weekEndDate = new Date(weekDays[6]);
       weekEndDate.setHours(23, 59, 59, 999);
 
+      // タスクが週の範囲と重なっているかチェック
       if (taskEndDate >= weekStart && taskStartDate <= weekEndDate) {
-        html += '<div style="display: grid; grid-template-columns: 200px repeat(7, 1fr); border-bottom: 1px solid #e0e0e0; min-height: 60px; align-items: center;">';
+        html += '<div style="display: grid; grid-template-columns: 200px repeat(7, 1fr); border-bottom: 1px solid #e0e0e0; min-height: 70px; position: relative;">';
 
         // タスク名列
         const completedStyle = task.completed ? 'text-decoration: line-through; opacity: 0.6;' : '';
-        html += `<div style="padding: 12px; border-right: 1px solid #e0e0e0; ${completedStyle}">
+        const indent = task.type === 'child' ? 'padding-left: 28px;' : '';
+
+        html += `<div style="padding: 12px; ${indent} border-right: 1px solid #e0e0e0; ${completedStyle} display: flex; flex-direction: column; justify-content: center;">
         <div style="font-size: 14px; font-weight: 500; margin-bottom: 4px;">${task.title}</div>
         <div style="font-size: 11px; color: #666;">${task.description || ''}</div>
         <div style="font-size: 10px; color: #999; margin-top: 2px;">
-          ${task.start_date ? new Date(task.start_date.date).toLocaleDateString('ja-JP', {month: 'short', day: 'numeric'}) : ''} - 
-          ${task.end_date ? new Date(task.end_date.date).toLocaleDateString('ja-JP', {month: 'short', day: 'numeric'}) : ''}
+          ${new Date(task.start_date).toLocaleDateString('ja-JP', {month: 'short', day: 'numeric'})} - 
+          ${new Date(task.end_date).toLocaleDateString('ja-JP', {month: 'short', day: 'numeric'})}
         </div>
       </div>`;
 
-        // 各日のセル
-        weekDays.forEach((day, dayIndex) => {
-          const dayStart = new Date(day);
-          dayStart.setHours(0, 0, 0, 0);
-          const dayEnd = new Date(day);
-          dayEnd.setHours(23, 59, 59, 999);
+        // カレンダー部分（7日分）- 相対配置のコンテナ
+        html += '<div style="grid-column: 2 / 9; position: relative; display: grid; grid-template-columns: repeat(7, 1fr);">';
 
-          const isInRange = dayStart >= taskStartDate && dayStart <= taskEndDate;
-          const isStart = dayStart.toDateString() === taskStartDate.toDateString();
-          const isEnd = dayStart.toDateString() === taskEndDate.toDateString();
-          const isToday = dayStart.toDateString() === new Date().toDateString();
-
-          let cellStyle = 'padding: 8px; border-right: 1px solid #e0e0e0; position: relative;';
-          if (isToday) cellStyle += 'background: #f0f8ff;';
-
-          html += `<div style="${cellStyle}">`;
-
-          if (isInRange) {
-            const barColor = task.completed ? '#9e9e9e' : '#42a5f5';
-            const borderRadius = `${isStart ? '12px' : '0'} ${isEnd ? '12px' : '0'} ${isEnd ? '12px' : '0'} ${isStart ? '12px' : '0'}`;
-
-            // タスクバーの表示
-            html += `<div style="background: ${barColor}; height: 32px; border-radius: ${borderRadius}; display: flex; align-items: center; padding: 0 8px; color: white; font-size: 11px; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.15); position: relative;">`;
-
-            // 開始日にタスク名を表示
-            if (isStart) {
-              html += `<span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${task.title}</span>`;
-            }
-
-            // 終了日にマーカーを表示
-            if (isEnd) {
-              html += `<span style="position: absolute; right: 8px; font-size: 14px;">●</span>`;
-            }
-
-            html += '</div>';
-          }
-
-          html += '</div>';
+        // 背景セル（今日のハイライト用）
+        weekDays.forEach((day) => {
+          const isToday = day.toDateString() === new Date().toDateString();
+          html += `<div style="border-right: 1px solid #e0e0e0; ${isToday ? 'background: #f0f8ff;' : ''}"></div>`;
         });
 
-        html += '</div>';
+        // タスクバーを絶対配置で重ねる
+        // バーの開始位置と幅を計算
+        let barStartCol = 0;
+        let barSpan = 0;
+
+        weekDays.forEach((day, index) => {
+          const dayStart = new Date(day);
+          dayStart.setHours(0, 0, 0, 0);
+
+          // タスクがこの日に開始
+          if (dayStart.toDateString() === taskStartDate.toDateString() ||
+            (taskStartDate < weekStart && index === 0)) {
+            barStartCol = index;
+          }
+
+          // タスクがこの日の範囲内
+          if (dayStart >= taskStartDate && dayStart <= taskEndDate) {
+            barSpan++;
+          }
+        });
+
+        // タスクが週より前に開始している場合
+        if (taskStartDate < weekStart) {
+          barStartCol = 0;
+        }
+
+        // タスクが週より後に終了する場合
+        if (taskEndDate > weekEndDate) {
+          barSpan = 7 - barStartCol;
+        }
+
+        let barColor = '#42a5f5';
+
+        if (task.type === 'child') {
+          barColor = '#90caf9';
+        }
+        if (task.completed) {
+          barColor = '#9e9e9e';
+        }
+
+        const isStartInWeek = taskStartDate >= weekStart;
+        const isEndInWeek = taskEndDate <= weekEndDate;
+        const borderRadiusLeft = isStartInWeek ? '16px' : '0';
+        const borderRadiusRight = isEndInWeek ? '16px' : '0';
+
+        // バーの配置
+        const leftPercent = (barStartCol / 7) * 100;
+        const widthPercent = (barSpan / 7) * 100;
+
+        html += `<div style="position: absolute; top: 50%; transform: translateY(-50%); left: ${leftPercent}%; width: ${widthPercent}%; padding: 0 4px;">
+        <div style="background: ${barColor}; height: 36px; border-radius: ${borderRadiusLeft} ${borderRadiusRight} ${borderRadiusRight} ${borderRadiusLeft}; display: flex; align-items: center; padding: 0 12px; color: white; font-size: 12px; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+          ${isStartInWeek ? task.title : ''}
+          ${isEndInWeek ? '<span style="margin-left: auto;">●</span>' : ''}
+        </div>
+      </div>`;
+
+        html += '</div>'; // カレンダー部分終了
+        html += '</div>'; // 行終了
       }
     });
 

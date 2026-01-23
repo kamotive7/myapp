@@ -55,25 +55,30 @@ class DashboardController extends AppController
         //カレンダー用のタスクデータ
         $this->set('calendarTasks', $this->getCalendarTasks());
 
+        //ガントチャートのデータ渡す
+        $this->set('ganttTasks', $this->getGanttTasks());
+
+
         //タスク追加処理
         if ($this->request->is('post')) {
             $task = $this->Tasks->newEmptyEntity();
             $data = $this->request->getData();
 
             //end_dateが設定されていてstart_dateが未設定の場合、3日前をstart_dateに設定
-            if(!empty($data['end_date']) && empty($data['start_date'])) {
+            if (!empty($data['end_date']) && empty($data['start_date'])) {
                 $endDate = new \DateTime($data['end_date']);
                 $endDate->modify('-3 days');
                 $data['start_date'] = $endDate->format('Y-m-d');
             }
 
-            $task = $this->Tasks->patchEntity($task, $this->request->getData());
+            $task = $this->Tasks->patchEntity($task, $data);
 
             if ($this->Tasks->save($task)) {
                 $this->Flash->success('タスクを追加しました。');
                 return $this->redirect(['action' => 'index']);
             }
             $this->Flash->error('タスクの追加に失敗しました。');
+            debug($task->getErrors());
         }
     }
 
@@ -129,7 +134,7 @@ class DashboardController extends AppController
             'overdue' => $overdueTasks,
             'nextMonthTotal' => count($nextMonthTasks),
             'nextMonthCompleted' => $nextMonthCompleted,
-            'nextMonghIncomplete' => $nextMonthIncomplete,
+            'nextMonthIncomplete' => $nextMonthIncomplete,
             'barChart' => [
                 'recentAssigned' => $recentAssigned,
                 'today' => $todayTasks,
@@ -158,6 +163,49 @@ class DashboardController extends AppController
         }
 
         return $calendarData;
+    }
+
+    private function getGanttTasks(): array
+    {
+        $tasks = $this->Tasks->find('all', [
+            'contain' => ['ChildTasks'],
+            'order' => ['Tasks.start_date' => 'ASC']
+        ])->toArray();
+
+        $ganttTasks = [];
+
+        foreach ($tasks as $task) {
+            //親タスク
+            if ($task->start_date && $task->end_date) {
+                $ganttTasks[] = [
+                    'id' => $task->id,
+                    'title' => $task->title,
+                    'description' => $task->description,
+                    'start_date' => $task->start_date->format('Y-m-d'),
+                    'end_date' => $task->end_date->format('Y-m-d'),
+                    'completed' => $task->completed,
+                    'type' => 'parent'
+                ];
+            }
+
+            //サブタスク
+            foreach ($task->child_tasks as $subtask) {
+                if ($subtask->start_date && $subtask->end_date) {
+                    $ganttTasks[] = [
+                        'id' => $subtask->id,
+                        'title' => '┗ ' . $subtask->title,
+                        'description' => $subtask->description,
+                        'start_date' => $subtask->start_date->format('Y-m-d'),
+                        'end_date' => $subtask->end_date->format('Y-m-d'),
+                        'completed' => $subtask->completed,
+                        'type' => 'child',
+                        'parent_id' => $task->id
+                    ];
+                }
+            }
+        }
+
+        return $ganttTasks;
     }
 
     public function addSubtask($parentId = null)
