@@ -10,6 +10,9 @@ use Cake\ORM\Entity;
  *
  * @property int $id
  * @property string $title
+ * @property string|null $description
+ * @property \Cake\I18n\FrozenDate|null $start_date
+ * @property \Cake\I18n\FrozenDate|null $end_date
  * @property \Cake\I18n\Date|null $due_date
  * @property bool $completed
  * @property \Cake\I18n\DateTime $created

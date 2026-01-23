@@ -46,6 +46,9 @@ class TasksTable extends Table
 
         $this->addBehavior('Timestamp');
 
+        $this->getSchema()->setColumnType('start_date', 'date');
+        $this->getSchema()->setColumnType('end_date', 'date');
+
         //親タスクとの関連
         $this->belongsTo('ParentTasks', [
             'className' => 'Tasks',
@@ -70,12 +73,20 @@ class TasksTable extends Table
         $validator
             ->integer('id')
             ->allowEmptyString('id', null, 'create');
-            
+
         $validator
             ->scalar('title')
             ->maxLength('title', 255)
             ->requirePresence('title', 'create')
             ->notEmptyString('title');
+
+        $validator
+            ->date('start_date')
+            ->allowEmptyDate('start_date');
+
+        $validator
+            ->date('end_date')
+            ->allowEmptyDate('end_date');
 
         $validator
             ->date('due_date')

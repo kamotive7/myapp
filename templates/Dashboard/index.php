@@ -1,8 +1,50 @@
+<style>
+  /* デフォルト（ライトモード） */
+  :root {
+    --bg-color: #ffffff;
+    --container-bg: #f5f5f5;
+    --card-bg: #ffffff;
+    --text-color: #333333;
+    --border-color: #dddddd;
+    --tab-active: #2196F3;
+  }
+
+  /* ダークモード（VSCode風） */
+  [data-theme="dark"] {
+    --bg-color: #1e1e1e;
+    --container-bg: #252526;
+    --card-bg: #2d2d2d;
+    --text-color: #d4d4d4;
+    --border-color: #3e3e42;
+    --tab-active: #007acc;
+  }
+
+  /* 全体のスタイルに変数を使用 */
+  body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+  .dashboard-wrapper,
+  .tab-content,
+  .task-item {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+  }
+</style>
+
 <h2>
   <?= $today->format('n月j日') ?>
   （<?= ['日', '月', '火', '水', '木', '金', '土'][$today->dayOfWeek] ?>）
   <?= h($user['name']) ?>さん、こんにちは
 </h2>
+
+<div style="text-align: right; padding: 10px;">
+  <button id="theme-toggle" style="padding: 5px 15px; cursor: pointer; border-radius: 20px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color);">
+    🌙 ダークモード
+  </button>
+</div>
 
 <div class="dashboard-wrapper" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; position: sticky; top: 0; background: white; z-index: 100; padding: 10px 0;">
@@ -240,6 +282,27 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script>
+  const toggleBtn = document.getElementById('theme-toggle');
+  const htmlElement = document.documentElement;
+
+  toggleBtn.addEventListener('click', () => {
+    if (htmlElement.getAttribute('data-theme') === 'dark') {
+      htmlElement.removeAttribute('data-theme');
+      toggleBtn.innerText = '🌙 ダークモード';
+      localStorage.setItem('theme', 'light'); // 設定を保存
+    } else {
+      htmlElement.setAttribute('data-theme', 'dark');
+      toggleBtn.innerText = '☀️ ライトモード';
+      localStorage.setItem('theme', 'dark'); // 設定を保存
+    }
+  });
+
+  // ページ読み込み時に保存された設定を反映
+  if (localStorage.getItem('theme') === 'dark') {
+    htmlElement.setAttribute('data-theme', 'dark');
+    toggleBtn.innerText = '☀️ ライトモード';
+  }
+
   // ページ読み込み時の初期表示設定
   document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -278,7 +341,6 @@
     }
   });
 
-
   // タブ切り替え
   function switchTab(tabName) {
     const tabs = document.querySelectorAll('.tab-content');
@@ -293,14 +355,24 @@
     });
 
     document.getElementById(tabName + '-view').style.display = 'block';
-    event.target.classList.add('active');
-    event.target.style.borderBottomColor = '#2196F3';
-    event.target.style.fontWeight = 'bold';
-    event.target.style.color = '#2196F3';
+
+    // イベントが発生したボタンをアクティブにする
+    if (event && event.target) {
+      event.target.classList.add('active');
+      event.target.style.borderBottomColor = '#2196F3';
+      event.target.style.fontWeight = 'bold';
+      event.target.style.color = '#2196F3';
+    }
+
+    // --- ここからが重要：タブ切り替え時にグラフを更新する ---
+    if (tabName === 'dashboard') {
+      // ダッシュボードが表示された瞬間にChart.jsにサイズを再計算させる
+      if (typeof barChartInstance !== 'undefined') barChartInstance.resize();
+      if (typeof doughnutChartInstance !== 'undefined') doughnutChartInstance.resize();
+    }
 
     if (tabName === 'calendar') {
       renderCalendar();
-      // 週の開始を今週の日曜日に設定
       const today = new Date();
       currentWeekStart = new Date(today);
       currentWeekStart.setDate(today.getDate() - today.getDay());
