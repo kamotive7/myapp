@@ -41,6 +41,15 @@ class DashboardController extends AppController
         //ログインユーザ情報をViewに渡す
         $this->set('user', $session->read('user'));
 
+        //現在のタブを取得・保存
+        if($this->request->getQuery('tab')) {
+            $session->write('current_tab', $this->request->getQuery('tab'));
+        }
+
+        $currentTab = $session->read('current_tab') ?: 'dashboard';
+
+        $this->set('currentTab', $currentTab);
+
         $tasks = $this->Tasks->find('all', [
             'conditions' => ['Tasks.parent_id IS' => null],
             'contain' => ['ChildTasks'],
@@ -55,7 +64,7 @@ class DashboardController extends AppController
         //カレンダー用のタスクデータ
         $this->set('calendarTasks', $this->getCalendarTasks());
 
-        //ガントチャートのデータ渡す
+        //ガントチャート用のデータ
         $this->set('ganttTasks', $this->getGanttTasks());
 
 
@@ -75,7 +84,8 @@ class DashboardController extends AppController
 
             if ($this->Tasks->save($task)) {
                 $this->Flash->success('タスクを追加しました。');
-                return $this->redirect(['action' => 'index']);
+                $session->write('current_tab', 'list');
+                return $this->redirect(['action' => 'index', '?' => ['tab' => 'list']]);
             }
             $this->Flash->error('タスクの追加に失敗しました。');
             debug($task->getErrors());
@@ -232,7 +242,9 @@ class DashboardController extends AppController
             $this->Flash->error('サブタスクの追加に失敗しました。');
         }
 
-        return $this->redirect(['action' => 'index']);
+        $session = $this->request->getSession();
+        $session->write('current_tab', 'list');
+        return $this->redirect(['action' => 'index', '?' => ['tab' => 'list']]);
     }
 
     public function toggleComplete($id = null)
@@ -247,7 +259,9 @@ class DashboardController extends AppController
             $this->Flash->error('更新に失敗しました。');
         }
 
-        return $this->redirect(['action' => 'index']);
+        $session = $this->request->getSession();
+        $session->write('current_tab', 'list');
+        return $this->redirect(['action' => 'index', '?' => ['tab' => 'list']]);
     }
 
     public function edit($id = null)
@@ -266,7 +280,9 @@ class DashboardController extends AppController
             $this->Flash->error('更新に失敗しました。');
         }
 
-        return $this->redirect(['action' => 'index']);
+        $session = $this->request->getSession();
+        $session->write('current_tab', 'list');
+        return $this->redirect(['action' => 'index', '?' => ['tab' => 'list']]);
     }
 
     public function delete($id = null)
@@ -280,6 +296,8 @@ class DashboardController extends AppController
             $this->Flash->error('削除に失敗しました。');
         }
 
-        return $this->redirect(['action' => 'index']);
+        $session = $this->request->getSession();
+        $session->write('current_tab', 'list');
+        return $this->redirect(['action' => 'index', '?' => ['tab' => 'list']]);
     }
 }

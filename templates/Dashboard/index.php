@@ -240,6 +240,45 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script>
+  // ページ読み込み時の初期表示設定
+  document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+
+    //tabパラメータがあればそのタブを、なければ現在のactive（ダッシュボード）を表示
+    if (tabParam && document.getElementById(tabParam + '-view')) {
+      // いったんすべてのタブを非表示に
+      const tabs = document.querySelectorAll('.tab-content');
+      const buttons = document.querySelectorAll('.tab-btn');
+      tabs.forEach(tab => tab.style.display = 'none');
+      buttons.forEach(btn => {
+        btn.classList.remove('active');
+        btn.style.borderBottomColor = 'transparent';
+        btn.style.color = '#666';
+        btn.style.fontWeight = 'normal';
+      });
+
+      //対象のタブを表示
+      document.getElementById(tabParam + '-view').style.display = 'block';
+      //対応するボタンを探してアクティブにする
+      buttons.forEach(btn => {
+        if (btn.getAttribute('onclick').includes(`'${tabParam}'`)) {
+          btn.classList.add('active');
+          btn.style.borderBottomColor = '#2196F3';
+          btn.style.color = '#2196F3';
+          btn.style.fontWeight = 'bold';
+        }
+      });
+
+      //カレンダー表示が必要な場合
+      if (tabParam === 'calendar') {
+        renderCalendar();
+        renderGanttChart();
+      }
+    }
+  });
+
+
   // タブ切り替え
   function switchTab(tabName) {
     const tabs = document.querySelectorAll('.tab-content');
