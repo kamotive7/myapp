@@ -41,7 +41,7 @@
   /* 背景色の不一致を直すための重要修正：
      wrapper自体は背景色(bg-color)に。中身(カード)だけをcard-bgにする。 */
   .dashboard-wrapper {
-    background-color: var(--bg-color) !important; 
+    background-color: var(--bg-color) !important;
     color: var(--text-color) !important;
   }
 
@@ -53,14 +53,15 @@
   }
 
   /* --- 3. ヘッダー・タブ（背景色を完全統一） --- */
-  .dashboard-wrapper > div:first-child,
+  .dashboard-wrapper>div:first-child,
   .tab-navigation {
     background-color: var(--header-bg) !important;
     border-bottom: 1px solid var(--border-color) !important;
   }
 
   .tab-btn {
-    background: transparent !important; /* ボタン自体の背景を消して透過させる */
+    background: transparent !important;
+    /* ボタン自体の背景を消して透過させる */
     color: var(--text-muted) !important;
   }
 
@@ -75,7 +76,7 @@
     color: var(--text-color) !important;
   }
 
-  [data-theme="dark"] .task-parent > div:last-child {
+  [data-theme="dark"] .task-parent>div:last-child {
     background-color: var(--subtask-container-bg) !important;
   }
 
@@ -85,24 +86,29 @@
   }
 
   /* グラフ・カレンダーのコンテナ（背景から浮かせる） */
-  [data-theme="dark"] #calendar-container, 
+  [data-theme="dark"] #calendar-container,
   [data-theme="dark"] #gantt-container,
-  [data-theme="dark"] .dashboard-wrapper > div > div {
+  [data-theme="dark"] .dashboard-wrapper>div>div {
     background-color: var(--card-bg) !important;
   }
 
   /* カレンダーセル */
-  [data-theme="dark"] #calendar-container > div > div {
+  [data-theme="dark"] #calendar-container>div>div {
     background-color: var(--calendar-cell-bg) !important;
     color: var(--text-color) !important;
   }
 
   /* カレンダーヘッダー（曜日部分） */
-  [data-theme="dark"] #calendar-container > div > div:nth-child(-n+7) {
+  [data-theme="dark"] #calendar-container>div>div:nth-child(-n+7) {
     background-color: var(--calendar-header-bg) !important;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     color: var(--text-color) !important;
   }
 
@@ -186,23 +192,32 @@
 
   <!-- タスクリスト画面 -->
   <div id="list-view" class="tab-content" style="display: none;">
-    <div class="task-form" style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+    <div style="margin-bottom: 20px;">
+      <button id="main-form-toggle-btn" onclick="toggleMainForm()" style="background: #4CAF50; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 15px; display: flex; align-items: center; gap: 8px;">
+        <span id="main-form-icon">+</span> 新しいタスクを追加
+      </button>
+    </div>
+
+    <div id="main-task-form" class="task-form" style="display: none; background: var(--task-form-bg); padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid var(--border-color);">
       <?= $this->Form->create(null, ['type' => 'post', 'url' => ['controller' => 'Dashboard', 'action' => 'index']]) ?>
       <div style="margin-bottom: 15px;">
-        <?= $this->Form->control('title', ['label' => 'タスク名', 'placeholder' => '新しいタスクを入力...', 'required' => true, 'style' => 'width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;']) ?>
+        <?= $this->Form->control('title', ['label' => 'タスク名', 'placeholder' => '新しいタスクを入力...', 'required' => true, 'style' => 'width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px;']) ?>
       </div>
       <div style="margin-bottom: 15px;">
-        <?= $this->Form->control('description', ['label' => '概要', 'type' => 'textarea', 'rows' => 2, 'placeholder' => 'タスクの詳細を入力...', 'style' => 'width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;']) ?>
+        <?= $this->Form->control('description', ['label' => '概要', 'type' => 'textarea', 'rows' => 2, 'placeholder' => 'タスクの詳細を入力...', 'style' => 'width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px;']) ?>
       </div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
         <div>
-          <?= $this->Form->control('start_date', ['label' => '開始日', 'type' => 'date', 'style' => 'width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;']) ?>
+          <?= $this->Form->control('start_date', ['label' => '開始日', 'type' => 'date', 'style' => 'width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px;']) ?>
         </div>
         <div>
-          <?= $this->Form->control('end_date', ['label' => '終了日（期限）', 'type' => 'date', 'style' => 'width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;', 'empty' => true]) ?>
+          <?= $this->Form->control('end_date', ['label' => '終了日（期限）', 'type' => 'date', 'style' => 'width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px;', 'empty' => true]) ?>
         </div>
       </div>
-      <?= $this->Form->button('タスクを追加', ['style' => 'background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;']) ?>
+      <div style="display: flex; gap: 10px;">
+        <?= $this->Form->button('タスクを追加', ['style' => 'background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;']) ?>
+        <button type="button" onclick="toggleMainForm()" style="background: var(--text-muted); color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">キャンセル</button>
+      </div>
       <?= $this->Form->end() ?>
     </div>
 
@@ -210,17 +225,19 @@
       <h2 style="margin-bottom: 20px;">タスク一覧</h2>
       <?php if (isset($tasks) && $tasks->count() > 0): ?>
         <?php foreach ($tasks as $task): ?>
-          <div class="task-parent" style="margin-bottom: 20px; border: 2px solid #ddd; border-radius: 8px; overflow: hidden;">
-            <div class="task-item" style="background: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; <?= $task->completed ? 'opacity: 0.6;' : '' ?>">
-              <div style="flex: 1;">
-                <div style="display: flex; align-items: flex-start; gap: 10px;">
+          <div class="task-parent" style="margin-bottom: 20px; border: 2px solid var(--border-color); border-radius: 8px; overflow: hidden; background: var(--card-bg);">
+            <div class="task-item" style="padding: 15px; display: flex; justify-content: space-between; align-items: center; <?= $task->completed ? 'opacity: 0.6;' : '' ?>">
+              <div style="display: flex; align-items: flex-start; gap: 12px; flex: 1;">
+                <button onclick="toggleSubtasks(<?= $task->id ?>)" id="arrow-<?= $task->id ?>" style="background: none; border: none; color: var(--text-color); cursor: pointer; font-size: 18px; padding: 0; margin-top: 4px; transition: transform 0.2s;">▶</button>
+
+                <div style="display: flex; align-items: flex-start; gap: 10px; flex: 1;">
                   <?= $this->Form->create(null, ['url' => ['action' => 'toggleComplete', $task->id]]) ?>
                   <input type="checkbox" <?= $task->completed ? 'checked' : '' ?> onchange="this.form.submit()" style="width: 20px; height: 20px; cursor: pointer; margin-top: 5px;">
                   <?= $this->Form->end() ?>
 
                   <div id="display-container-<?= $task->id ?>" style="flex: 1;">
                     <span style="font-size: 18px; font-weight: bold; <?= $task->completed ? 'text-decoration: line-through;' : '' ?>"><?= h($task->title) ?></span>
-                    <div style="font-size: 14px; color: #666; margin-top: 4px;"><?= nl2br(h($task->description)) ?></div>
+                    <div style="font-size: 14px; color: var(--text-muted); margin-top: 4px;"><?= nl2br(h($task->description)) ?></div>
                     <?php if ($task->start_date || $task->end_date): ?>
                       <div style="font-size: 13px; margin-top: 4px; display: flex; gap: 10px;">
                         <?php if ($task->start_date): ?>
@@ -233,7 +250,7 @@
                     <?php endif; ?>
                   </div>
 
-                  <div id="edit-form-<?= $task->id ?>" style="display: none; flex: 1; background: #fff; padding: 10px; border: 1px solid #2196F3; border-radius: 4px;">
+                  <div id="edit-form-<?= $task->id ?>" style="display: none; flex: 1; background: var(--card-bg); padding: 10px; border: 1px solid #2196F3; border-radius: 4px;">
                     <?= $this->Form->create(null, ['url' => ['action' => 'edit', $task->id]]) ?>
                     <?= $this->Form->control('title', ['label' => 'タスク名', 'value' => $task->title, 'style' => 'width: 100%; margin-bottom: 8px;']) ?>
                     <?= $this->Form->control('description', ['label' => '概要', 'type' => 'textarea', 'rows' => 2, 'value' => $task->description, 'style' => 'width: 100%; margin-bottom: 8px;']) ?>
@@ -252,82 +269,57 @@
                 </div>
               </div>
               <div style="display: flex; gap: 10px;">
-                <button onclick="document.getElementById('subtask-form-<?= $task->id ?>').style.display='block'; this.style.display='none';" style="background: #2196F3; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">サブタスク追加</button>
+                <button onclick="toggleSubtasks(<?= $task->id ?>, true)" style="background: #2196F3; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">サブタスク追加</button>
                 <?= $this->Form->postLink('削除', ['action' => 'delete', $task->id], ['confirm' => '削除しますか？', 'style' => 'background: #f44336; color: white; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px;']) ?>
               </div>
             </div>
 
-            <div id="subtask-form-<?= $task->id ?>" style="display: none; background: #f9f9f9; padding: 15px; border-top: 1px solid #ddd;">
-              <?= $this->Form->create(null, ['url' => ['action' => 'addSubtask', $task->id]]) ?>
-              <div style="display: flex; flex-direction: column; gap: 10px;">
-                <?= $this->Form->control('title', ['label' => 'サブタスク名', 'required' => true, 'style' => 'width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;']) ?>
-                <?= $this->Form->control('description', ['label' => '概要', 'type' => 'textarea', 'rows' => 2, 'placeholder' => 'サブタスクの詳細...', 'style' => 'width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;']) ?>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                  <?= $this->Form->control('start_date', ['label' => '開始日', 'type' => 'date', 'style' => 'width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;']) ?>
-                  <?= $this->Form->control('end_date', ['label' => '終了日（期限）', 'type' => 'date', 'style' => 'width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;']) ?>
+            <div id="expanded-area-<?= $task->id ?>" style="display: none; border-top: 1px solid var(--border-color);">
+              <div id="subtask-form-<?= $task->id ?>" style="background: var(--container-bg); padding: 15px; border-bottom: 1px solid var(--border-color);">
+                <?= $this->Form->create(null, ['url' => ['action' => 'addSubtask', $task->id]]) ?>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <?= $this->Form->control('title', ['label' => 'サブタスク名', 'required' => true, 'style' => 'width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;']) ?>
+                  <?= $this->Form->control('description', ['label' => '概要', 'type' => 'textarea', 'rows' => 2, 'placeholder' => 'サブタスクの詳細...', 'style' => 'width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;']) ?>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <?= $this->Form->control('start_date', ['label' => '開始日', 'type' => 'date', 'style' => 'width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;']) ?>
+                    <?= $this->Form->control('end_date', ['label' => '終了日（期限）', 'type' => 'date', 'style' => 'width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;']) ?>
+                  </div>
+                  <div style="display: flex; gap: 10px;">
+                    <?= $this->Form->button('追加', ['style' => 'background: #2196F3; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer;']) ?>
+                    <button type="button" onclick="toggleSubtasks(<?= $task->id ?>)" style="background: #999; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer;">キャンセル</button>
+                  </div>
                 </div>
-                <div style="display: flex; gap: 10px;">
-                  <?= $this->Form->button('追加', ['style' => 'background: #2196F3; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer;']) ?>
-                  <button type="button" onclick="document.getElementById('subtask-form-<?= $task->id ?>').style.display='none'; document.querySelector('[onclick*=\'subtask-form-<?= $task->id ?>\']').style.display='inline-block';" style="background: #999; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer;">キャンセル</button>
-                </div>
+                <?= $this->Form->end() ?>
               </div>
-              <?= $this->Form->end() ?>
-            </div>
 
-            <?php if (!empty($task->child_tasks)): ?>
-              <div style="background: #fafafa; padding: 10px 15px 10px 45px; border-top: 1px solid #e0e0e0;">
-                <?php foreach ($task->child_tasks as $subtask): ?>
-                  <div class="subtask-item" style="background: white; border-left: 3px solid #2196F3; padding: 10px; margin-bottom: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; <?= $subtask->completed ? 'opacity: 0.6;' : '' ?>">
-                    <div style="flex: 1;">
-                      <div style="display: flex; align-items: flex-start; gap: 10px;">
-                        <?= $this->Form->create(null, ['url' => ['action' => 'toggleComplete', $subtask->id]]) ?>
-                        <input type="checkbox" <?= $subtask->completed ? 'checked' : '' ?> onchange="this.form.submit()" style="width: 18px; height: 18px; cursor: pointer; margin-top: 3px;">
-                        <?= $this->Form->end() ?>
-
-                        <div id="display-container-<?= $subtask->id ?>" style="flex: 1;">
-                          <span style="font-size: 15px; <?= $subtask->completed ? 'text-decoration: line-through;' : '' ?>"><?= h($subtask->title) ?></span>
-                          <div style="font-size: 12px; color: #777; margin-top: 2px;"><?= nl2br(h($subtask->description)) ?></div>
-                          <?php if ($subtask->start_date || $subtask->end_date): ?>
-                            <div style="font-size: 11px; margin-top: 2px; display: flex; gap: 8px;">
-                              <?php if ($subtask->start_date): ?>
-                                <span style="color: #4CAF50;">開始: <?= $subtask->start_date->format('Y/m/d') ?></span>
-                              <?php endif; ?>
-                              <?php if ($subtask->end_date): ?>
-                                <span style="color: #e91e63;">期限: <?= $subtask->end_date->format('Y/m/d') ?></span>
-                              <?php endif; ?>
-                            </div>
-                          <?php endif; ?>
-                        </div>
-
-                        <div id="edit-form-<?= $subtask->id ?>" style="display: none; flex: 1; background: #fff; padding: 8px; border: 1px solid #2196F3; border-radius: 4px;">
-                          <?= $this->Form->create(null, ['url' => ['action' => 'edit', $subtask->id]]) ?>
-                          <?= $this->Form->control('title', ['label' => 'サブタスク名', 'value' => $subtask->title, 'style' => 'width: 100%; font-size: 14px; margin-bottom: 5px;']) ?>
-                          <?= $this->Form->control('description', ['label' => '概要', 'type' => 'textarea', 'rows' => 2, 'value' => $subtask->description, 'style' => 'width: 100%; font-size: 13px; margin-bottom: 5px;']) ?>
-                          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 8px;">
-                            <?= $this->Form->control('start_date', ['label' => '開始日', 'type' => 'date', 'value' => $subtask->start_date ? $subtask->start_date->format('Y-m-d') : '', 'style' => 'width: 100%; font-size: 13px;']) ?>
-                            <?= $this->Form->control('end_date', ['label' => '終了日（期限）', 'type' => 'date', 'value' => $subtask->end_date ? $subtask->end_date->format('Y-m-d') : '', 'style' => 'width: 100%; font-size: 13px;']) ?>
-                          </div>
-                          <div style="display: flex; gap: 5px;">
-                            <?= $this->Form->button('保存', ['style' => 'background: #4CAF50; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;']) ?>
-                            <button type="button" onclick="toggleEdit(<?= $subtask->id ?>, false)" style="background: #999; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">戻る</button>
-                          </div>
+              <?php if (!empty($task->child_tasks)): ?>
+                <div style="background: var(--subtask-container-bg); padding: 10px 15px 10px 45px;">
+                  <?php foreach ($task->child_tasks as $subtask): ?>
+                    <div class="subtask-item" style="background: var(--card-bg); border-left: 3px solid #2196F3; padding: 10px; margin-bottom: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; <?= $subtask->completed ? 'opacity: 0.6;' : '' ?>">
+                      <div style="flex: 1;">
+                        <div style="display: flex; align-items: flex-start; gap: 10px;">
+                          <?= $this->Form->create(null, ['url' => ['action' => 'toggleComplete', $subtask->id]]) ?>
+                          <input type="checkbox" <?= $subtask->completed ? 'checked' : '' ?> onchange="this.form.submit()" style="width: 18px; height: 18px; cursor: pointer; margin-top: 3px;">
                           <?= $this->Form->end() ?>
+                          <div id="display-container-<?= $subtask->id ?>" style="flex: 1;">
+                            <span style="font-size: 15px; <?= $subtask->completed ? 'text-decoration: line-through;' : '' ?>"><?= h($subtask->title) ?></span>
+                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;"><?= nl2br(h($subtask->description)) ?></div>
+                          </div>
+                          <button id="edit-btn-<?= $subtask->id ?>" onclick="toggleEdit(<?= $subtask->id ?>, true)" style="background: none; border: none; color: #2196F3; cursor: pointer; font-size: 11px;">[編集]</button>
                         </div>
-
-                        <button id="edit-btn-<?= $subtask->id ?>" onclick="toggleEdit(<?= $subtask->id ?>, true)" style="background: none; border: none; color: #2196F3; cursor: pointer; font-size: 11px;">[編集]</button>
+                      </div>
+                      <div>
+                        <?= $this->Form->postLink('削除', ['action' => 'delete', $subtask->id], ['confirm' => '削除しますか？', 'style' => 'background: #f44336; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 13px;']) ?>
                       </div>
                     </div>
-                    <div>
-                      <?= $this->Form->postLink('削除', ['action' => 'delete', $subtask->id], ['confirm' => '削除しますか？', 'style' => 'background: #f44336; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 13px;']) ?>
-                    </div>
-                  </div>
-                <?php endforeach; ?>
-              </div>
-            <?php endif; ?>
+                  <?php endforeach; ?>
+                </div>
+              <?php endif; ?>
+            </div>
           </div>
         <?php endforeach; ?>
       <?php else: ?>
-        <p style="text-align: center; color: #999; padding: 40px 0;">タスクがありません。</p>
+        <p style="text-align: center; color: var(--text-muted); padding: 40px 0;">タスクがありません。</p>
       <?php endif; ?>
     </div>
   </div>
@@ -650,6 +642,44 @@
     });
     html += '</div>';
     document.getElementById('gantt-container').innerHTML = html;
+  }
+
+  // ★メインフォームの開閉制御
+  function toggleMainForm() {
+    const form = document.getElementById('main-task-form');
+    const btn = document.getElementById('main-form-toggle-btn');
+    const icon = document.getElementById('main-form-icon');
+
+    if (form.style.display === 'none') {
+      form.style.display = 'block';
+      btn.style.background = '#999';
+      icon.innerText = '×';
+    } else {
+      form.style.display = 'none';
+      btn.style.background = '#4CAF50';
+      icon.innerText = '+';
+    }
+  }
+
+  // ★子タスクエリアの展開制御
+  function toggleSubtasks(taskId, showFormOnly = false) {
+    const area = document.getElementById('expanded-area-' + taskId);
+    const arrow = document.getElementById('arrow-' + taskId);
+
+    if (area.style.display === 'none' || showFormOnly) {
+      area.style.display = 'block';
+      arrow.style.transform = 'rotate(90deg)';
+    } else {
+      area.style.display = 'none';
+      arrow.style.transform = 'rotate(0deg)';
+    }
+  }
+
+  // 既存の編集用関数
+  function toggleEdit(id, show) {
+    document.getElementById('display-container-' + id).style.display = show ? 'none' : 'block';
+    document.getElementById('edit-form-' + id).style.display = show ? 'block' : 'none';
+    document.getElementById('edit-btn-' + id).style.display = show ? 'none' : 'inline-block';
   }
 
   // --- 6. タブ・テーマ・初期化 ---
