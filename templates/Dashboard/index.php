@@ -7,6 +7,11 @@
     --text-color: #333333;
     --border-color: #dddddd;
     --tab-active: #2196F3;
+    --header-bg: #ffffff;
+    --calendar-cell-bg: #ffffff;
+    --calendar-header-bg: #f5f5f5;
+    --task-form-bg: #f5f5f5;
+    --subtask-container-bg: #fafafa;
   }
 
   /* ダークモード（VSCode風） */
@@ -17,6 +22,11 @@
     --text-color: #d4d4d4;
     --border-color: #3e3e42;
     --tab-active: #007acc;
+    --header-bg: #1e1e1e;
+    --calendar-cell-bg: #2d2d2d;
+    --calendar-header-bg: #252526;
+    --task-form-bg: #252526;
+    --subtask-container-bg: #252526;
   }
 
   /* 全体のスタイルに変数を使用 */
@@ -30,6 +40,90 @@
   .tab-content,
   .task-item {
     background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+  }
+
+  /* ヘッダー（タスク管理システムの部分） */
+  .dashboard-wrapper>div:first-child {
+    background-color: var(--header-bg) !important;
+    color: var(--text-color) !important;
+  }
+
+  /* タブナビゲーション */
+  .tab-navigation {
+    background-color: var(--header-bg) !important;
+    border-bottom-color: var(--border-color) !important;
+  }
+
+  /* タブボタン */
+  .tab-btn {
+    background-color: var(--header-bg) !important;
+    color: var(--text-color) !important;
+  }
+
+  .tab-btn.active {
+    color: var(--tab-active) !important;
+    border-bottom-color: var(--tab-active) !important;
+  }
+
+  /* タスクフォーム */
+  .task-form {
+    background-color: var(--task-form-bg) !important;
+    color: var(--text-color) !important;
+  }
+
+  /* サブタスクコンテナ */
+  [data-theme="dark"] .task-parent>div:last-child {
+    background-color: var(--subtask-container-bg) !important;
+  }
+
+  /* サブタスクアイテム */
+  .subtask-item {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+  }
+
+  /* グラフ・カレンダーの背景 */
+  [data-theme="dark"] .dashboard-wrapper>div>div,
+  [data-theme="dark"] #calendar-container>div,
+  [data-theme="dark"] #gantt-container>div {
+    background-color: var(--card-bg) !important;
+  }
+
+  /* カレンダーセル */
+  [data-theme="dark"] #calendar-container>div>div {
+    background-color: var(--calendar-cell-bg) !important;
+    color: var(--text-color) !important;
+  }
+
+  /* グラフ・カレンダーの背景 */
+  [data-theme="dark"] .dashboard-wrapper>div>div {
+    background-color: var(--card-bg) !important;
+  }
+
+  /* カレンダーヘッダー */
+  [data-theme="dark"] #calendar-container>div>div:first-child {
+    background-color: var(--container-bg) !important;
+  }
+
+
+  /* h1, h2, h3 などの見出し */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--text-color) !important;
+  }
+
+  /* 入力フォーム */
+  [data-theme="dark"] input,
+  [data-theme="dark"] textarea,
+  [data-theme="dark"] select {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
     border-color: var(--border-color) !important;
   }
 </style>
@@ -84,7 +178,7 @@
     <!-- グラフエリア -->
     <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-bottom: 40px;">
       <!-- 棒グラフ -->
-      <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <div style="background: var(--card-bg) !important; padding: 25px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
         <h3 style="margin-top: 0; margin-bottom: 20px; color: #333;">タスクの分類</h3>
         <div style="position: relative; height: 300px;">
           <canvas id="barChart"></canvas>
@@ -296,6 +390,12 @@
       localStorage.setItem('theme', 'dark'); // 設定を保存
     }
   });
+
+  // カレンダーの再描画
+  if (document.getElementById('calendar-view').style.display !== 'none') {
+    renderCalendar();
+    renderGanttChart();
+  }
 
   // ページ読み込み時に保存された設定を反映
   if (localStorage.getItem('theme') === 'dark') {
@@ -515,20 +615,31 @@
 
     document.getElementById('calendar-title').textContent = `${year}年${month + 1}月`;
 
+    // ダークモード判定 
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const cellBg = isDark ? '#2d2d2d' : 'white';
+    const headerBg = isDark ? '#252526' : '#f5f5f5';
+    const textColor = isDark ? '#d4d4d4' : '#333';
+    const borderColor = isDark ? '#3e3e42' : '#ddd';
+    const taskBg = isDark ? '#4a7c9e' : '#bbdefb'; // ★ダークモード時を濃い青に変更
+    const completedTaskBg = isDark ? '#5a5a5a' : '#e0e0e0'; // ★ダークモード時を少し明るく
+    const todayBorder = isDark ? '#007acc' : '#2196F3';
+
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    let html = '<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #ddd;">';
+    // ★バッククォートに修正
+    let html = `<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: ${borderColor};">`;
 
     // 曜日ヘッダー
     const days = ['日', '月', '火', '水', '木', '金', '土'];
     days.forEach(day => {
-      html += `<div style="background: #f5f5f5; padding: 10px; text-align: center; font-weight: bold;">${day}</div>`;
+      html += `<div style="background: ${headerBg}; padding: 10px; text-align: center; font-weight: bold; color: ${textColor};">${day}</div>`;
     });
 
     // 空白セル
     for (let i = 0; i < firstDay; i++) {
-      html += '<div style="background: white; min-height: 120px; padding: 8px;"></div>';
+      html += `<div style="background: ${cellBg}; min-height: 120px; padding: 8px;"></div>`;
     }
 
     // 日付セル
@@ -537,13 +648,14 @@
       const tasksForDay = calendarTasks[dateStr] || [];
       const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
 
-      html += `<div style="background: white; min-height: 120px; padding: 8px; ${isToday ? 'border: 2px solid #2196F3;' : ''}">`;
-      html += `<div style="font-weight: bold; margin-bottom: 5px; color: ${isToday ? '#2196F3' : '#333'};">${day}</div>`;
+      html += `<div style="background: ${cellBg}; min-height: 120px; padding: 8px; ${isToday ? `border: 2px solid ${todayBorder};` : ''}">`;
+      html += `<div style="font-weight: bold; margin-bottom: 5px; color: ${isToday ? todayBorder : textColor}; font-size: 14px;">${day}</div>`; // ★フォントサイズ追加
 
       tasksForDay.forEach(task => {
-        const bgColor = task.completed ? '#e0e0e0' : '#bbdefb';
+        const bgColor = task.completed ? completedTaskBg : taskBg;
         const textDecoration = task.completed ? 'line-through' : 'none';
-        html += `<div style="background: ${bgColor}; padding: 4px 6px; margin-bottom: 3px; border-radius: 3px; font-size: 11px; text-decoration: ${textDecoration}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${task.title}">${task.title}</div>`;
+        const taskTextColor = isDark ? '#e8e8e8' : '#1a1a1a'; // ★より明るく/暗く
+        html += `<div style="background: ${bgColor}; padding: 4px 6px; margin-bottom: 3px; border-radius: 3px; font-size: 11px; text-decoration: ${textDecoration}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: ${taskTextColor}; font-weight: 500;" title="${task.title}">${task.title}</div>`; // ★font-weight追加
       });
 
       html += '</div>';
@@ -570,17 +682,27 @@
     document.getElementById('week-title').textContent =
       `${weekStart.getFullYear()}年${weekStart.getMonth() + 1}月${weekStart.getDate()}日 - ${weekEnd.getMonth() + 1}月${weekEnd.getDate()}日`;
 
+    // ★ダークモード判定追加
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const headerBg = isDark ? '#252526' : '#f5f5f5';
+    const textColor = isDark ? '#d4d4d4' : '#333';
+    const borderColor = isDark ? '#3e3e42' : '#ddd';
+    const rowBg = isDark ? '#2d2d2d' : 'white';
+    const todayBg = isDark ? '#1a3a4a' : '#e3f2fd';
+    const todayTextColor = isDark ? '#4fc3f7' : '#2196F3';
+
     let html = '<div style="min-width: 900px;">';
 
     // ヘッダー（曜日と日付）
-    html += '<div style="display: grid; grid-template-columns: 200px repeat(7, 1fr); border-bottom: 2px solid #ddd; background: #f5f5f5; position: sticky; top: 0; z-index: 10;">';
-    html += '<div style="padding: 12px; font-weight: bold; border-right: 1px solid #ddd;">タスク名</div>';
+    html += `<div style="display: grid; grid-template-columns: 200px repeat(7, 1fr); border-bottom: 2px solid ${borderColor}; background: ${headerBg}; position: sticky; top: 0; z-index: 10;">`;
+    html += `<div style="padding: 12px; font-weight: bold; border-right: 1px solid ${borderColor}; color: ${textColor};">タスク名</div>`;
 
     const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
     weekDays.forEach((day, index) => {
       const isToday = day.toDateString() === new Date().toDateString();
       const isWeekend = index === 0 || index === 6;
-      html += `<div style="padding: 12px; text-align: center; font-weight: bold; border-right: 1px solid #ddd; ${isToday ? 'background: #e3f2fd; color: #2196F3;' : ''} ${isWeekend ? 'color: #999;' : ''}">
+      const weekendColor = isDark ? '#888' : '#999';
+      html += `<div style="padding: 12px; text-align: center; font-weight: bold; border-right: 1px solid ${borderColor}; ${isToday ? `background: ${todayBg}; color: ${todayTextColor};` : `color: ${isWeekend ? weekendColor : textColor};`}">
       <div style="font-size: 12px;">${dayNames[index]}</div>
       <div style="font-size: 16px; margin-top: 2px;">${day.getDate()}</div>
     </div>`;
@@ -589,7 +711,6 @@
 
     // タスク行
     allTasksForGantt.forEach(task => {
-      // start_dateとend_dateが両方設定されている場合のみ表示
       if (!task.start_date || !task.end_date) return;
 
       const taskStartDate = new Date(task.start_date);
@@ -598,38 +719,34 @@
       const taskEndDate = new Date(task.end_date);
       taskEndDate.setHours(0, 0, 0, 0);
 
-      // 週の範囲内かチェック
       const weekEndDate = new Date(weekDays[6]);
       weekEndDate.setHours(23, 59, 59, 999);
 
-      // タスクが週の範囲と重なっているかチェック
       if (taskEndDate >= weekStart && taskStartDate <= weekEndDate) {
-        html += '<div style="display: grid; grid-template-columns: 200px repeat(7, 1fr); border-bottom: 1px solid #e0e0e0; min-height: 70px; position: relative;">';
+        html += `<div style="display: grid; grid-template-columns: 200px repeat(7, 1fr); border-bottom: 1px solid ${borderColor}; min-height: 70px; position: relative; background: ${rowBg};">`;
 
-        // タスク名列
         const completedStyle = task.completed ? 'text-decoration: line-through; opacity: 0.6;' : '';
         const indent = task.type === 'child' ? 'padding-left: 28px;' : '';
+        const descColor = isDark ? '#999' : '#666';
+        const dateColor = isDark ? '#888' : '#999';
 
-        html += `<div style="padding: 12px; ${indent} border-right: 1px solid #e0e0e0; ${completedStyle} display: flex; flex-direction: column; justify-content: center;">
+        html += `<div style="padding: 12px; ${indent} border-right: 1px solid ${borderColor}; ${completedStyle} display: flex; flex-direction: column; justify-content: center; color: ${textColor};">
         <div style="font-size: 14px; font-weight: 500; margin-bottom: 4px;">${task.title}</div>
-        <div style="font-size: 11px; color: #666;">${task.description || ''}</div>
-        <div style="font-size: 10px; color: #999; margin-top: 2px;">
+        <div style="font-size: 11px; color: ${descColor};">${task.description || ''}</div>
+        <div style="font-size: 10px; color: ${dateColor}; margin-top: 2px;">
           ${new Date(task.start_date).toLocaleDateString('ja-JP', {month: 'short', day: 'numeric'})} - 
           ${new Date(task.end_date).toLocaleDateString('ja-JP', {month: 'short', day: 'numeric'})}
         </div>
       </div>`;
 
-        // カレンダー部分（7日分）- 相対配置のコンテナ
         html += '<div style="grid-column: 2 / 9; position: relative; display: grid; grid-template-columns: repeat(7, 1fr);">';
 
-        // 背景セル（今日のハイライト用）
         weekDays.forEach((day) => {
           const isToday = day.toDateString() === new Date().toDateString();
-          html += `<div style="border-right: 1px solid #e0e0e0; ${isToday ? 'background: #f0f8ff;' : ''}"></div>`;
+          const cellTodayBg = isDark ? '#263238' : '#f0f8ff';
+          html += `<div style="border-right: 1px solid ${borderColor}; ${isToday ? `background: ${cellTodayBg};` : ''}"></div>`;
         });
 
-        // タスクバーを絶対配置で重ねる
-        // バーの開始位置と幅を計算
         let barStartCol = 0;
         let barSpan = 0;
 
@@ -637,24 +754,20 @@
           const dayStart = new Date(day);
           dayStart.setHours(0, 0, 0, 0);
 
-          // タスクがこの日に開始
           if (dayStart.toDateString() === taskStartDate.toDateString() ||
             (taskStartDate < weekStart && index === 0)) {
             barStartCol = index;
           }
 
-          // タスクがこの日の範囲内
           if (dayStart >= taskStartDate && dayStart <= taskEndDate) {
             barSpan++;
           }
         });
 
-        // タスクが週より前に開始している場合
         if (taskStartDate < weekStart) {
           barStartCol = 0;
         }
 
-        // タスクが週より後に終了する場合
         if (taskEndDate > weekEndDate) {
           barSpan = 7 - barStartCol;
         }
@@ -673,7 +786,6 @@
         const borderRadiusLeft = isStartInWeek ? '16px' : '0';
         const borderRadiusRight = isEndInWeek ? '16px' : '0';
 
-        // バーの配置
         const leftPercent = (barStartCol / 7) * 100;
         const widthPercent = (barSpan / 7) * 100;
 
@@ -684,8 +796,8 @@
         </div>
       </div>`;
 
-        html += '</div>'; // カレンダー部分終了
-        html += '</div>'; // 行終了
+        html += '</div>';
+        html += '</div>';
       }
     });
 
