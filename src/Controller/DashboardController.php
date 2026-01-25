@@ -42,7 +42,7 @@ class DashboardController extends AppController
         $this->set('user', $session->read('user'));
 
         //現在のタブを取得・保存
-        if($this->request->getQuery('tab')) {
+        if ($this->request->getQuery('tab')) {
             $session->write('current_tab', $this->request->getQuery('tab'));
         }
 
@@ -95,7 +95,7 @@ class DashboardController extends AppController
     private function getStatistics()
     {
         $allTasks = $this->Tasks->find('all')->toArray();
-        $now = new FrozenTime();
+        $now = \Cake\I18n\FrozenDate::now();
         $oneMonthLater = $now->addMonths(1);
 
         // 基本統計
@@ -116,7 +116,7 @@ class DashboardController extends AppController
         $nextMonthIncomplete = count($nextMonthTasks) - $nextMonthCompleted;
 
         //棒グラフ用データ
-        $today = $now->startOfDay();
+        $today = $now;
         $tomorrow = $today->addDays(1);
         $nextWeekStart = $today->addDays(1);
         $nextWeekEnd = $today->addWeeks(1);
