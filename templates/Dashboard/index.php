@@ -1,7 +1,7 @@
 <style>
-  /* デフォルト（ライトモード） */
+  /* --- 1. 変数定義（変更なし） --- */
   :root {
-    --bg-color: #ffffff;
+    --bg-color: #f4f7f6;
     --container-bg: #f5f5f5;
     --card-bg: #ffffff;
     --text-color: #333333;
@@ -12,9 +12,10 @@
     --calendar-header-bg: #f5f5f5;
     --task-form-bg: #f5f5f5;
     --subtask-container-bg: #fafafa;
+    --grid-color: #dddddd;
+    --text-muted: #666666;
   }
 
-  /* ダークモード（VSCode風） */
   [data-theme="dark"] {
     --bg-color: #1e1e1e;
     --container-bg: #252526;
@@ -27,98 +28,84 @@
     --calendar-header-bg: #252526;
     --task-form-bg: #252526;
     --subtask-container-bg: #252526;
+    --text-muted: #999999;
   }
 
-  /* 全体のスタイルに変数を使用 */
+  /* --- 2. 基盤スタイル（修正点：wrapperの背景をbg-colorに） --- */
   body {
     background-color: var(--bg-color);
     color: var(--text-color);
     transition: background-color 0.3s, color 0.3s;
   }
 
-  .dashboard-wrapper,
+  /* 背景色の不一致を直すための重要修正：
+     wrapper自体は背景色(bg-color)に。中身(カード)だけをcard-bgにする。 */
+  .dashboard-wrapper {
+    background-color: var(--bg-color) !important; 
+    color: var(--text-color) !important;
+  }
+
   .tab-content,
   .task-item {
     background-color: var(--card-bg) !important;
-    border-color: var(--border-color) !important;
+    border: 1px solid var(--border-color) !important;
     color: var(--text-color) !important;
   }
 
-  /* ヘッダー（タスク管理システムの部分） */
-  .dashboard-wrapper>div:first-child {
-    background-color: var(--header-bg) !important;
-    color: var(--text-color) !important;
-  }
-
-  /* タブナビゲーション */
+  /* --- 3. ヘッダー・タブ（背景色を完全統一） --- */
+  .dashboard-wrapper > div:first-child,
   .tab-navigation {
     background-color: var(--header-bg) !important;
-    border-bottom-color: var(--border-color) !important;
+    border-bottom: 1px solid var(--border-color) !important;
   }
 
-  /* タブボタン */
   .tab-btn {
-    background-color: var(--header-bg) !important;
-    color: var(--text-color) !important;
+    background: transparent !important; /* ボタン自体の背景を消して透過させる */
+    color: var(--text-muted) !important;
   }
 
   .tab-btn.active {
     color: var(--tab-active) !important;
-    border-bottom-color: var(--tab-active) !important;
+    border-bottom: 3px solid var(--tab-active) !important;
   }
 
-  /* タスクフォーム */
+  /* --- 4. その他の要素（保持：削らずに残しています） --- */
   .task-form {
     background-color: var(--task-form-bg) !important;
     color: var(--text-color) !important;
   }
 
-  /* サブタスクコンテナ */
-  [data-theme="dark"] .task-parent>div:last-child {
+  [data-theme="dark"] .task-parent > div:last-child {
     background-color: var(--subtask-container-bg) !important;
   }
 
-  /* サブタスクアイテム */
   .subtask-item {
     background-color: var(--card-bg) !important;
     color: var(--text-color) !important;
   }
 
-  /* グラフ・カレンダーの背景 */
-  [data-theme="dark"] .dashboard-wrapper>div>div,
-  [data-theme="dark"] #calendar-container>div,
-  [data-theme="dark"] #gantt-container>div {
+  /* グラフ・カレンダーのコンテナ（背景から浮かせる） */
+  [data-theme="dark"] #calendar-container, 
+  [data-theme="dark"] #gantt-container,
+  [data-theme="dark"] .dashboard-wrapper > div > div {
     background-color: var(--card-bg) !important;
   }
 
   /* カレンダーセル */
-  [data-theme="dark"] #calendar-container>div>div {
+  [data-theme="dark"] #calendar-container > div > div {
     background-color: var(--calendar-cell-bg) !important;
     color: var(--text-color) !important;
   }
 
-  /* グラフ・カレンダーの背景 */
-  [data-theme="dark"] .dashboard-wrapper>div>div {
-    background-color: var(--card-bg) !important;
+  /* カレンダーヘッダー（曜日部分） */
+  [data-theme="dark"] #calendar-container > div > div:nth-child(-n+7) {
+    background-color: var(--calendar-header-bg) !important;
   }
 
-  /* カレンダーヘッダー */
-  [data-theme="dark"] #calendar-container>div>div:first-child {
-    background-color: var(--container-bg) !important;
-  }
-
-
-  /* h1, h2, h3 などの見出し */
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
+  h1, h2, h3, h4, h5, h6 {
     color: var(--text-color) !important;
   }
 
-  /* 入力フォーム */
   [data-theme="dark"] input,
   [data-theme="dark"] textarea,
   [data-theme="dark"] select {
@@ -141,16 +128,15 @@
 </div>
 
 <div class="dashboard-wrapper" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; position: sticky; top: 0; background: white; z-index: 100; padding: 10px 0;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; position: sticky; top: 0; background: inherit; color: var(--text-color); z-index: 100; padding: 10px 0; transition: background 0.3s;">
     <h1 style="margin: 0; font-size: 24px;">タスク管理システム</h1>
     <?= $this->Html->link('ログアウト', $this->Url->build(['controller' => 'Login', 'action' => 'logout']), ['style' => 'color: #f44336; text-decoration: none; font-size: 14px; white-space: nowrap;']) ?>
   </div>
 
-  <!-- タブナビゲーション -->
-  <div class="tab-navigation" style="border-bottom: 2px solid #ddd; margin-bottom: 25px; background: white; position: sticky; top: 60px; z-index: 99; padding-top: 5px;">
-    <button class="tab-btn active" onclick="switchTab('dashboard')" style="padding: 10px 20px; border: none; background: white; cursor: pointer; border-bottom: 3px solid #2196F3; font-weight: bold; font-size: 15px; color: #2196F3; margin-right: 5px;">ダッシュボード</button>
-    <button class="tab-btn" onclick="switchTab('list')" style="padding: 10px 20px; border: none; background: white; cursor: pointer; border-bottom: 3px solid transparent; font-size: 15px; color: #666; margin-right: 5px;">タスクリスト</button>
-    <button class="tab-btn" onclick="switchTab('calendar')" style="padding: 10px 20px; border: none; background: white; cursor: pointer; border-bottom: 3px solid transparent; font-size: 15px; color: #666;">カレンダー</button>
+  <div class="tab-navigation" style="border-bottom: 2px solid var(--border-color); margin-bottom: 25px; background: inherit; position: sticky; top: 60px; z-index: 99; padding-top: 5px; transition: background 0.3s;">
+    <button class="tab-btn active" onclick="switchTab('dashboard')" style="padding: 10px 20px; border: none; cursor: pointer; border-bottom: 3px solid #2196F3; font-weight: bold; font-size: 15px; color: #2196F3; margin-right: 5px;">ダッシュボード</button>
+    <button class="tab-btn" onclick="switchTab('list')" style="padding: 10px 20px; border: none; cursor: pointer; border-bottom: 3px solid transparent; font-size: 15px; color: var(--text-muted); margin-right: 5px;">タスクリスト</button>
+    <button class="tab-btn" onclick="switchTab('calendar')" style="padding: 10px 20px; border: none; cursor: pointer; border-bottom: 3px solid transparent; font-size: 15px; color: var(--text-muted);">カレンダー</button>
   </div>
 
   <!-- ダッシュボード画面 -->
@@ -186,8 +172,11 @@
       </div>
 
       <!-- 円グラフ -->
-      <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        <h3 style="margin-top: 0; margin-bottom: 20px; color: #333;">今後一か月のタスク<br><span style="font-size: 14px; color: #666; font-weight: normal;">（完了ステータス別）</span></h3>
+      <div style="background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: background 0.3s ease;">
+        <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--text-color);">
+          今後一か月のタスク<br>
+          <span style="font-size: 14px; color: var(--text-muted); font-weight: normal;">（完了ステータス別）</span>
+        </h3>
         <div style="position: relative; height: 300px; display: flex; align-items: center; justify-content: center;">
           <canvas id="doughnutChart"></canvas>
         </div>
@@ -376,324 +365,222 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script>
-  const toggleBtn = document.getElementById('theme-toggle');
-  const htmlElement = document.documentElement;
-
-  toggleBtn.addEventListener('click', () => {
-    if (htmlElement.getAttribute('data-theme') === 'dark') {
-      htmlElement.removeAttribute('data-theme');
-      toggleBtn.innerText = '🌙 ダークモード';
-      localStorage.setItem('theme', 'light'); // 設定を保存
-    } else {
-      htmlElement.setAttribute('data-theme', 'dark');
-      toggleBtn.innerText = '☀️ ライトモード';
-      localStorage.setItem('theme', 'dark'); // 設定を保存
-    }
-  });
-
-  // カレンダーの再描画
-  if (document.getElementById('calendar-view').style.display !== 'none') {
-    renderCalendar();
-    renderGanttChart();
-  }
-
-  // ページ読み込み時に保存された設定を反映
-  if (localStorage.getItem('theme') === 'dark') {
-    htmlElement.setAttribute('data-theme', 'dark');
-    toggleBtn.innerText = '☀️ ライトモード';
-  }
-
-  // ページ読み込み時の初期表示設定
-  document.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const tabParam = urlParams.get('tab');
-
-    //tabパラメータがあればそのタブを、なければ現在のactive（ダッシュボード）を表示
-    if (tabParam && document.getElementById(tabParam + '-view')) {
-      // いったんすべてのタブを非表示に
-      const tabs = document.querySelectorAll('.tab-content');
-      const buttons = document.querySelectorAll('.tab-btn');
-      tabs.forEach(tab => tab.style.display = 'none');
-      buttons.forEach(btn => {
-        btn.classList.remove('active');
-        btn.style.borderBottomColor = 'transparent';
-        btn.style.color = '#666';
-        btn.style.fontWeight = 'normal';
-      });
-
-      //対象のタブを表示
-      document.getElementById(tabParam + '-view').style.display = 'block';
-      //対応するボタンを探してアクティブにする
-      buttons.forEach(btn => {
-        if (btn.getAttribute('onclick').includes(`'${tabParam}'`)) {
-          btn.classList.add('active');
-          btn.style.borderBottomColor = '#2196F3';
-          btn.style.color = '#2196F3';
-          btn.style.fontWeight = 'bold';
-        }
-      });
-
-      //カレンダー表示が必要な場合
-      if (tabParam === 'calendar') {
-        renderCalendar();
-        renderGanttChart();
-      }
-    }
-  });
-
-  // タブ切り替え
-  function switchTab(tabName) {
-    const tabs = document.querySelectorAll('.tab-content');
-    const buttons = document.querySelectorAll('.tab-btn');
-
-    tabs.forEach(tab => tab.style.display = 'none');
-    buttons.forEach(btn => {
-      btn.classList.remove('active');
-      btn.style.borderBottomColor = 'transparent';
-      btn.style.fontWeight = 'normal';
-      btn.style.color = '#666';
-    });
-
-    document.getElementById(tabName + '-view').style.display = 'block';
-
-    // イベントが発生したボタンをアクティブにする
-    if (event && event.target) {
-      event.target.classList.add('active');
-      event.target.style.borderBottomColor = '#2196F3';
-      event.target.style.fontWeight = 'bold';
-      event.target.style.color = '#2196F3';
-    }
-
-    // --- ここからが重要：タブ切り替え時にグラフを更新する ---
-    if (tabName === 'dashboard') {
-      // ダッシュボードが表示された瞬間にChart.jsにサイズを再計算させる
-      if (typeof barChartInstance !== 'undefined') barChartInstance.resize();
-      if (typeof doughnutChartInstance !== 'undefined') doughnutChartInstance.resize();
-    }
-
-    if (tabName === 'calendar') {
-      renderCalendar();
-      const today = new Date();
-      currentWeekStart = new Date(today);
-      currentWeekStart.setDate(today.getDate() - today.getDay());
-      renderGanttChart();
-    }
-  }
-
-  // タスク編集トグル
-  function toggleEdit(id, isEdit) {
-    const displayContainer = document.getElementById('display-container-' + id);
-    const editFormDiv = document.getElementById('edit-form-' + id);
-    const editBtn = document.getElementById('edit-btn-' + id);
-
-    if (isEdit) {
-      if (displayContainer) displayContainer.style.display = 'none';
-      editBtn.style.display = 'none';
-      editFormDiv.style.display = 'block';
-    } else {
-      if (displayContainer) displayContainer.style.display = 'block';
-      editBtn.style.display = 'inline-block';
-      editFormDiv.style.display = 'none';
-    }
-  }
-
-  // 統計データ
-  const statistics = <?= json_encode($statistics) ?>;
-
-  // 棒グラフ
-  const barCtx = document.getElementById('barChart').getContext('2d');
-  const barData = statistics.barChart;
-  const maxValue = Math.max(barData.recentAssigned, barData.today, barData.nextWeek, barData.later);
-  const stepSize = maxValue <= 10 ? 2 : maxValue <= 20 ? 4 : maxValue <= 50 ? 10 : 20;
-
-  new Chart(barCtx, {
-    type: 'bar',
-    data: {
-      labels: ['最近の割り当て', '今日の作業', '来週の作業', 'あとにする'],
-      datasets: [{
-        label: 'タスク数',
-        data: [barData.recentAssigned, barData.today, barData.nextWeek, barData.later],
-        backgroundColor: [
-          'rgba(102, 126, 234, 0.8)',
-          'rgba(245, 87, 108, 0.8)',
-          'rgba(79, 172, 254, 0.8)',
-          'rgba(250, 112, 154, 0.8)'
-        ],
-        borderColor: [
-          'rgb(102, 126, 234)',
-          'rgb(245, 87, 108)',
-          'rgb(79, 172, 254)',
-          'rgb(250, 112, 154)'
-        ],
-        borderWidth: 2
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            stepSize: stepSize
-          }
-        }
-      },
-      plugins: {
-        legend: {
-          display: false
-        }
-      }
-    }
-  });
-
-  // ドーナツグラフ
-  const doughnutCtx = document.getElementById('doughnutChart').getContext('2d');
-  new Chart(doughnutCtx, {
-    type: 'doughnut',
-    data: {
-      labels: ['完了', '未完了'],
-      datasets: [{
-        data: [statistics.nextMonthCompleted, statistics.nextMonthIncomplete],
-        backgroundColor: [
-          'rgba(76, 175, 80, 0.8)',
-          'rgba(33, 150, 243, 0.8)'
-        ],
-        borderColor: [
-          'rgb(76, 175, 80)',
-          'rgb(33, 150, 243)'
-        ],
-        borderWidth: 2
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'bottom'
-        },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              return context.label + ': ' + context.parsed + '件';
-            }
-          }
-        }
-      },
-      cutout: '60%'
-    },
-    plugins: [{
-      id: 'centerText',
-      beforeDraw: function(chart) {
-        const width = chart.width;
-        const height = chart.height;
-        const ctx = chart.ctx;
-        ctx.restore();
-        const fontSize = (height / 200).toFixed(2);
-        ctx.font = 'bold ' + fontSize + 'em sans-serif';
-        ctx.textBaseline = 'middle';
-        const text = statistics.nextMonthTotal + '件';
-        const textX = Math.round((width - ctx.measureText(text).width) / 2);
-        const textY = height / 2;
-        ctx.fillStyle = '#333';
-        ctx.fillText(text, textX, textY);
-        ctx.save();
-      }
-    }]
-  });
-
-  // カレンダー機能
-  const calendarTasks = <?= json_encode($calendarTasks) ?>;
-  const allTasksForGantt = <?= json_encode($ganttTasks) ?>;
+  // --- 1. グローバル変数の定義 ---
+  let barChartInstance = null;
+  let doughnutChartInstance = null;
   let currentDate = new Date();
   let currentWeekStart = new Date();
+  // 初期状態で今週の日曜日に設定
+  currentWeekStart.setDate(currentDate.getDate() - currentDate.getDay());
+
+  // PHPデータの埋め込み
+  const statistics = <?= json_encode($statistics) ?>;
+  const calendarTasks = <?= json_encode($calendarTasks) ?>;
+  const allTasksForGantt = <?= json_encode($ganttTasks) ?>;
+
+  // --- 2. ヘルパー関数 ---
+
+  // ダークモードに応じた色を取得（タイポ getAtribute -> getAttribute を修正済）
+  function getThemeColors() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    return {
+      isDark: isDark,
+      text: isDark ? '#d4d4d4' : '#333',
+      grid: isDark ? '#3e3e42' : '#dddddd',
+      cardBg: isDark ? '#2d2d2d' : '#ffffff'
+    };
+  }
+
+  // --- 3. グラフ描画セクション ---
+
+  function renderCharts() {
+    const theme = getThemeColors();
+    const barCtx = document.getElementById('barChart').getContext('2d');
+    const barData = statistics.barChart;
+
+    // 最大値からステップサイズを計算（元のロジックを維持）
+    const maxValue = Math.max(barData.recentAssigned, barData.today, barData.nextWeek, barData.later);
+    const stepSize = maxValue <= 10 ? 2 : maxValue <= 20 ? 4 : maxValue <= 50 ? 10 : 20;
+
+    if (barChartInstance) barChartInstance.destroy();
+    barChartInstance = new Chart(barCtx, {
+      type: 'bar',
+      data: {
+        labels: ['最近の割り当て', '今日の作業', '来週の作業', 'あとにする'],
+        datasets: [{
+          label: 'タスク数',
+          data: [barData.recentAssigned, barData.today, barData.nextWeek, barData.later],
+          backgroundColor: [
+            'rgba(102, 126, 234, 0.8)', 'rgba(245, 87, 108, 0.8)',
+            'rgba(79, 172, 254, 0.8)', 'rgba(250, 112, 154, 0.8)'
+          ],
+          borderColor: [
+            'rgb(102, 126, 234)', 'rgb(245, 87, 108)',
+            'rgb(79, 172, 254)', 'rgb(250, 112, 154)'
+          ],
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: theme.grid
+            },
+            ticks: {
+              color: theme.text,
+              stepSize: stepSize
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              color: theme.text
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
+    });
+
+    const doughnutCtx = document.getElementById('doughnutChart').getContext('2d');
+    if (doughnutChartInstance) doughnutChartInstance.destroy();
+    doughnutChartInstance = new Chart(doughnutCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['完了', '未完了'],
+        datasets: [{
+          data: [statistics.nextMonthCompleted, statistics.nextMonthIncomplete],
+          backgroundColor: ['rgba(76, 175, 80, 0.8)', 'rgba(33, 150, 243, 0.8)'],
+          borderColor: ['rgb(76, 175, 80)', 'rgb(33, 150, 243)'],
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: theme.text
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => context.label + ': ' + context.parsed + '件'
+            }
+          }
+        },
+        cutout: '60%'
+      },
+      plugins: [{
+        id: 'centerText',
+        beforeDraw: function(chart) {
+          const {
+            width,
+            height,
+            ctx
+          } = chart;
+          ctx.restore();
+          const fontSize = (height / 200).toFixed(2);
+          ctx.font = 'bold ' + fontSize + 'em sans-serif';
+          ctx.textBaseline = 'middle';
+          const text = statistics.nextMonthTotal + '件';
+          ctx.fillStyle = theme.text;
+          const textX = Math.round((width - ctx.measureText(text).width) / 2);
+          ctx.fillText(text, textX, height / 2);
+          ctx.save();
+        }
+      }]
+    });
+  }
+
+  // --- 4. カレンダー描画セクション ---
 
   function renderCalendar() {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-
     document.getElementById('calendar-title').textContent = `${year}年${month + 1}月`;
 
-    // ダークモード判定 
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const theme = getThemeColors();
+    const isDark = theme.isDark;
+
+    // 元のコードのカラーロジックを反映
     const cellBg = isDark ? '#2d2d2d' : 'white';
     const headerBg = isDark ? '#252526' : '#f5f5f5';
-    const textColor = isDark ? '#d4d4d4' : '#333';
-    const borderColor = isDark ? '#3e3e42' : '#ddd';
-    const taskBg = isDark ? '#4a7c9e' : '#bbdefb'; // ★ダークモード時を濃い青に変更
-    const completedTaskBg = isDark ? '#5a5a5a' : '#e0e0e0'; // ★ダークモード時を少し明るく
+    const textColor = theme.text;
+    const borderColor = theme.grid;
+    const taskBg = isDark ? '#4a7c9e' : '#bbdefb';
+    const completedTaskBg = isDark ? '#5a5a5a' : '#e0e0e0';
     const todayBorder = isDark ? '#007acc' : '#2196F3';
 
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    // ★バッククォートに修正
     let html = `<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: ${borderColor};">`;
-
-    // 曜日ヘッダー
-    const days = ['日', '月', '火', '水', '木', '金', '土'];
-    days.forEach(day => {
+    ['日', '月', '火', '水', '木', '金', '土'].forEach(day => {
       html += `<div style="background: ${headerBg}; padding: 10px; text-align: center; font-weight: bold; color: ${textColor};">${day}</div>`;
     });
 
-    // 空白セル
     for (let i = 0; i < firstDay; i++) {
       html += `<div style="background: ${cellBg}; min-height: 120px; padding: 8px;"></div>`;
     }
 
-    // 日付セル
     for (let day = 1; day <= daysInMonth; day++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const tasksForDay = calendarTasks[dateStr] || [];
       const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
 
       html += `<div style="background: ${cellBg}; min-height: 120px; padding: 8px; ${isToday ? `border: 2px solid ${todayBorder};` : ''}">`;
-      html += `<div style="font-weight: bold; margin-bottom: 5px; color: ${isToday ? todayBorder : textColor}; font-size: 14px;">${day}</div>`; // ★フォントサイズ追加
+      html += `<div style="font-weight: bold; margin-bottom: 5px; color: ${isToday ? todayBorder : textColor}; font-size: 14px;">${day}</div>`;
 
       tasksForDay.forEach(task => {
         const bgColor = task.completed ? completedTaskBg : taskBg;
-        const textDecoration = task.completed ? 'line-through' : 'none';
-        const taskTextColor = isDark ? '#e8e8e8' : '#1a1a1a'; // ★より明るく/暗く
-        html += `<div style="background: ${bgColor}; padding: 4px 6px; margin-bottom: 3px; border-radius: 3px; font-size: 11px; text-decoration: ${textDecoration}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: ${taskTextColor}; font-weight: 500;" title="${task.title}">${task.title}</div>`; // ★font-weight追加
+        const textDeco = task.completed ? 'line-through' : 'none';
+        const taskTextColor = isDark ? '#e8e8e8' : '#1a1a1a';
+        html += `<div style="background: ${bgColor}; padding: 4px 6px; margin-bottom: 3px; border-radius: 3px; font-size: 11px; text-decoration: ${textDeco}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: ${taskTextColor}; font-weight: 500;" title="${task.title}">${task.title}</div>`;
       });
-
       html += '</div>';
     }
-
     html += '</div>';
     document.getElementById('calendar-container').innerHTML = html;
   }
+
+  // --- 5. ガントチャート描画セクション ---
 
   function renderGanttChart() {
     const weekStart = new Date(currentWeekStart);
     weekStart.setHours(0, 0, 0, 0);
     const weekDays = [];
-
-    // 週の日付を生成（日曜日から土曜日）
     for (let i = 0; i < 7; i++) {
       const day = new Date(weekStart);
       day.setDate(weekStart.getDate() + i);
       weekDays.push(day);
     }
 
-    // 週のタイトル更新
     const weekEnd = new Date(weekDays[6]);
-    document.getElementById('week-title').textContent =
-      `${weekStart.getFullYear()}年${weekStart.getMonth() + 1}月${weekStart.getDate()}日 - ${weekEnd.getMonth() + 1}月${weekEnd.getDate()}日`;
+    document.getElementById('week-title').textContent = `${weekStart.getFullYear()}年${weekStart.getMonth() + 1}月${weekStart.getDate()}日 - ${weekEnd.getMonth() + 1}月${weekEnd.getDate()}日`;
 
-    // ★ダークモード判定追加
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const theme = getThemeColors();
+    const isDark = theme.isDark;
     const headerBg = isDark ? '#252526' : '#f5f5f5';
-    const textColor = isDark ? '#d4d4d4' : '#333';
-    const borderColor = isDark ? '#3e3e42' : '#ddd';
+    const textColor = theme.text;
+    const borderColor = theme.grid;
     const rowBg = isDark ? '#2d2d2d' : 'white';
     const todayBg = isDark ? '#1a3a4a' : '#e3f2fd';
     const todayTextColor = isDark ? '#4fc3f7' : '#2196F3';
 
     let html = '<div style="min-width: 900px;">';
-
-    // ヘッダー（曜日と日付）
     html += `<div style="display: grid; grid-template-columns: 200px repeat(7, 1fr); border-bottom: 2px solid ${borderColor}; background: ${headerBg}; position: sticky; top: 0; z-index: 10;">`;
     html += `<div style="padding: 12px; font-weight: bold; border-right: 1px solid ${borderColor}; color: ${textColor};">タスク名</div>`;
 
@@ -703,122 +590,178 @@
       const isWeekend = index === 0 || index === 6;
       const weekendColor = isDark ? '#888' : '#999';
       html += `<div style="padding: 12px; text-align: center; font-weight: bold; border-right: 1px solid ${borderColor}; ${isToday ? `background: ${todayBg}; color: ${todayTextColor};` : `color: ${isWeekend ? weekendColor : textColor};`}">
-      <div style="font-size: 12px;">${dayNames[index]}</div>
-      <div style="font-size: 16px; margin-top: 2px;">${day.getDate()}</div>
-    </div>`;
+            <div style="font-size: 12px;">${dayNames[index]}</div>
+            <div style="font-size: 16px; margin-top: 2px;">${day.getDate()}</div>
+        </div>`;
     });
     html += '</div>';
 
-    // タスク行
     allTasksForGantt.forEach(task => {
       if (!task.start_date || !task.end_date) return;
+      const tStart = new Date(task.start_date);
+      const tEnd = new Date(task.end_date);
+      tStart.setHours(0, 0, 0, 0);
+      tEnd.setHours(0, 0, 0, 0);
+      const wEnd = new Date(weekDays[6]);
+      wEnd.setHours(23, 59, 59, 999);
 
-      const taskStartDate = new Date(task.start_date);
-      taskStartDate.setHours(0, 0, 0, 0);
-
-      const taskEndDate = new Date(task.end_date);
-      taskEndDate.setHours(0, 0, 0, 0);
-
-      const weekEndDate = new Date(weekDays[6]);
-      weekEndDate.setHours(23, 59, 59, 999);
-
-      if (taskEndDate >= weekStart && taskStartDate <= weekEndDate) {
+      if (tEnd >= weekStart && tStart <= wEnd) {
         html += `<div style="display: grid; grid-template-columns: 200px repeat(7, 1fr); border-bottom: 1px solid ${borderColor}; min-height: 70px; position: relative; background: ${rowBg};">`;
-
-        const completedStyle = task.completed ? 'text-decoration: line-through; opacity: 0.6;' : '';
+        const compStyle = task.completed ? 'text-decoration: line-through; opacity: 0.6;' : '';
         const indent = task.type === 'child' ? 'padding-left: 28px;' : '';
-        const descColor = isDark ? '#999' : '#666';
-        const dateColor = isDark ? '#888' : '#999';
 
-        html += `<div style="padding: 12px; ${indent} border-right: 1px solid ${borderColor}; ${completedStyle} display: flex; flex-direction: column; justify-content: center; color: ${textColor};">
-        <div style="font-size: 14px; font-weight: 500; margin-bottom: 4px;">${task.title}</div>
-        <div style="font-size: 11px; color: ${descColor};">${task.description || ''}</div>
-        <div style="font-size: 10px; color: ${dateColor}; margin-top: 2px;">
-          ${new Date(task.start_date).toLocaleDateString('ja-JP', {month: 'short', day: 'numeric'})} - 
-          ${new Date(task.end_date).toLocaleDateString('ja-JP', {month: 'short', day: 'numeric'})}
-        </div>
-      </div>`;
+        html += `<div style="padding: 12px; ${indent} border-right: 1px solid ${borderColor}; ${compStyle} display: flex; flex-direction: column; justify-content: center; color: ${textColor};">
+                <div style="font-size: 14px; font-weight: 500; margin-bottom: 4px;">${task.title}</div>
+                <div style="font-size: 11px; color: ${isDark ? '#999' : '#666'};">${task.description || ''}</div>
+                <div style="font-size: 10px; color: ${isDark ? '#888' : '#999'}; margin-top: 2px;">
+                    ${tStart.toLocaleDateString('ja-JP', {month:'short', day:'numeric'})} - ${tEnd.toLocaleDateString('ja-JP', {month:'short', day:'numeric'})}
+                </div>
+            </div>`;
 
         html += '<div style="grid-column: 2 / 9; position: relative; display: grid; grid-template-columns: repeat(7, 1fr);">';
-
         weekDays.forEach((day) => {
           const isToday = day.toDateString() === new Date().toDateString();
-          const cellTodayBg = isDark ? '#263238' : '#f0f8ff';
-          html += `<div style="border-right: 1px solid ${borderColor}; ${isToday ? `background: ${cellTodayBg};` : ''}"></div>`;
+          html += `<div style="border-right: 1px solid ${borderColor}; ${isToday ? `background: ${isDark ? '#263238' : '#f0f8ff'};` : ''}"></div>`;
         });
 
+        // バー計算ロジック（元のコードを忠実に再現）
         let barStartCol = 0;
         let barSpan = 0;
-
         weekDays.forEach((day, index) => {
-          const dayStart = new Date(day);
-          dayStart.setHours(0, 0, 0, 0);
-
-          if (dayStart.toDateString() === taskStartDate.toDateString() ||
-            (taskStartDate < weekStart && index === 0)) {
-            barStartCol = index;
-          }
-
-          if (dayStart >= taskStartDate && dayStart <= taskEndDate) {
-            barSpan++;
-          }
+          const dStart = new Date(day);
+          dStart.setHours(0, 0, 0, 0);
+          if (dStart.toDateString() === tStart.toDateString() || (tStart < weekStart && index === 0)) barStartCol = index;
+          if (dStart >= tStart && dStart <= tEnd) barSpan++;
         });
+        if (tStart < weekStart) barStartCol = 0;
+        if (tEnd > wEnd) barSpan = 7 - barStartCol;
 
-        if (taskStartDate < weekStart) {
-          barStartCol = 0;
-        }
+        let barColor = task.completed ? '#9e9e9e' : (task.type === 'child' ? '#90caf9' : '#42a5f5');
+        const bRadiusL = tStart >= weekStart ? '16px' : '0';
+        const bRadiusR = tEnd <= wEnd ? '16px' : '0';
 
-        if (taskEndDate > weekEndDate) {
-          barSpan = 7 - barStartCol;
-        }
-
-        let barColor = '#42a5f5';
-
-        if (task.type === 'child') {
-          barColor = '#90caf9';
-        }
-        if (task.completed) {
-          barColor = '#9e9e9e';
-        }
-
-        const isStartInWeek = taskStartDate >= weekStart;
-        const isEndInWeek = taskEndDate <= weekEndDate;
-        const borderRadiusLeft = isStartInWeek ? '16px' : '0';
-        const borderRadiusRight = isEndInWeek ? '16px' : '0';
-
-        const leftPercent = (barStartCol / 7) * 100;
-        const widthPercent = (barSpan / 7) * 100;
-
-        html += `<div style="position: absolute; top: 50%; transform: translateY(-50%); left: ${leftPercent}%; width: ${widthPercent}%; padding: 0 4px;">
-        <div style="background: ${barColor}; height: 36px; border-radius: ${borderRadiusLeft} ${borderRadiusRight} ${borderRadiusRight} ${borderRadiusLeft}; display: flex; align-items: center; padding: 0 12px; color: white; font-size: 12px; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-          ${isStartInWeek ? task.title : ''}
-          ${isEndInWeek ? '<span style="margin-left: auto;">●</span>' : ''}
-        </div>
-      </div>`;
-
-        html += '</div>';
-        html += '</div>';
+        html += `<div style="position: absolute; top: 50%; transform: translateY(-50%); left: ${(barStartCol/7)*100}%; width: ${(barSpan/7)*100}%; padding: 0 4px;">
+                <div style="background: ${barColor}; height: 36px; border-radius: ${bRadiusL} ${bRadiusR} ${bRadiusR} ${bRadiusL}; display: flex; align-items: center; padding: 0 12px; color: white; font-size: 12px; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    ${tStart >= weekStart ? task.title : ''}
+                    ${tEnd <= wEnd ? '<span style="margin-left: auto;">●</span>' : ''}
+                </div>
+            </div></div></div>`;
       }
     });
-
     html += '</div>';
     document.getElementById('gantt-container').innerHTML = html;
   }
 
-  function changeMonth(direction) {
-    currentDate.setMonth(currentDate.getMonth() + direction);
+  // --- 6. タブ・テーマ・初期化 ---
+
+  function switchTab(tabName) {
+    const tabs = document.querySelectorAll('.tab-content');
+    const buttons = document.querySelectorAll('.tab-btn');
+    tabs.forEach(tab => tab.style.display = 'none');
+    buttons.forEach(btn => {
+      btn.classList.remove('active');
+      btn.style.borderBottomColor = 'transparent';
+      btn.style.fontWeight = 'normal';
+      btn.style.color = '#666';
+    });
+
+    const target = document.getElementById(tabName + '-view');
+    if (target) target.style.display = 'block';
+
+    // クリックイベント経由の場合のボタン装飾
+    if (event && event.target && event.target.classList.contains('tab-btn')) {
+      event.target.classList.add('active');
+      event.target.style.borderBottomColor = '#2196F3';
+      event.target.style.fontWeight = 'bold';
+      event.target.style.color = '#2196F3';
+    }
+
+    if (tabName === 'dashboard') {
+      renderCharts(); // 表示時に再描画してサイズを確定
+    } else if (tabName === 'calendar') {
+      renderCalendar();
+      renderGanttChart();
+    }
+  }
+
+  const toggleBtn = document.getElementById('theme-toggle');
+  toggleBtn.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (isDark) {
+      document.documentElement.removeAttribute('data-theme');
+      toggleBtn.innerText = '🌙 ダークモード';
+      localStorage.setItem('theme', 'light');
+    } else {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      toggleBtn.innerText = '☀️ ライトモード';
+      localStorage.setItem('theme', 'dark');
+    }
+
+    // 現在の表示内容を更新
+    renderCharts();
+    if (document.getElementById('calendar-view').style.display !== 'none') {
+      renderCalendar();
+      renderGanttChart();
+    }
+  });
+
+  // 初期化
+  document.addEventListener('DOMContentLoaded', () => {
+    // テーマ復元
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      toggleBtn.innerText = '☀️ ライトモード';
+    }
+
+    // URLパラメータによる初期タブ設定（元のロジックを完全再現）
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    if (tabParam && document.getElementById(tabParam + '-view')) {
+      switchTab(tabParam);
+      // URL経由の場合のボタンのアクティブ化
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        if (btn.getAttribute('onclick').includes(`'${tabParam}'`)) {
+          btn.classList.add('active');
+          btn.style.borderBottomColor = '#2196F3';
+          btn.style.color = '#2196F3';
+          btn.style.fontWeight = 'bold';
+        }
+      });
+    } else {
+      renderCharts(); // デフォルト（ダッシュボード）
+    }
+  });
+
+  // その他（編集、カレンダー操作など）
+  function toggleEdit(id, isEdit) {
+    const disp = document.getElementById('display-container-' + id);
+    const form = document.getElementById('edit-form-' + id);
+    const btn = document.getElementById('edit-btn-' + id);
+    if (isEdit) {
+      if (disp) disp.style.display = 'none';
+      btn.style.display = 'none';
+      form.style.display = 'block';
+    } else {
+      if (disp) disp.style.display = 'block';
+      btn.style.display = 'inline-block';
+      form.style.display = 'none';
+    }
+  }
+
+  function changeMonth(dir) {
+    currentDate.setMonth(currentDate.getMonth() + dir);
     renderCalendar();
   }
 
-  function changeWeek(direction) {
-    currentWeekStart.setDate(currentWeekStart.getDate() + (direction * 7));
+  function changeWeek(dir) {
+    currentWeekStart.setDate(currentWeekStart.getDate() + (dir * 7));
     renderGanttChart();
   }
 
   function goToToday() {
     const today = new Date();
     currentWeekStart = new Date(today);
-    currentWeekStart.setDate(today.getDate() - today.getDay()); // 日曜日に設定
+    currentWeekStart.setDate(today.getDate() - today.getDay());
     renderGanttChart();
   }
 </script>
