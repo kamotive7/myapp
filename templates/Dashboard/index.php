@@ -128,8 +128,8 @@
 </h2>
 
 <div style="text-align: right; padding: 10px;">
-  <button id="theme-toggle" style="padding: 5px 15px; cursor: pointer; border-radius: 20px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color);">
-    🌙 ダークモード
+  <button id="theme-toggle" style="padding: 8px 16px; cursor: pointer; border-radius: 20px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); display: inline-flex; align-items: center; justify-content: center; gap: 6px; line-height: 1;">
+    <span>🌙</span> <span>ダークモード</span>
   </button>
 </div>
 
@@ -193,8 +193,8 @@
   <!-- タスクリスト画面 -->
   <div id="list-view" class="tab-content" style="display: none;">
     <div style="margin-bottom: 20px;">
-      <button id="main-form-toggle-btn" onclick="toggleMainForm()" style="background: #4CAF50; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 15px; display: flex; align-items: center; gap: 8px;">
-        <span id="main-form-icon">+</span> 新しいタスクを追加
+      <button id="main-form-toggle-btn" onclick="toggleMainForm()" style="background: #4CAF50; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 15px; display: inline-flex; align-items: center; gap: 8px; line-height: 1;">
+        <span id="main-form-icon">+</span> <span>新しいタスクを追加</span>
       </button>
     </div>
 
@@ -227,12 +227,12 @@
         <?php foreach ($tasks as $task): ?>
           <div class="task-parent" style="margin-bottom: 20px; border: 2px solid var(--border-color); border-radius: 8px; overflow: hidden; background: var(--card-bg);">
             <div class="task-item" style="padding: 15px; display: flex; justify-content: space-between; align-items: center; <?= $task->completed ? 'opacity: 0.6;' : '' ?>">
-              <div style="display: flex; align-items: flex-start; gap: 12px; flex: 1;">
-                <button onclick="toggleSubtasks(<?= $task->id ?>)" id="arrow-<?= $task->id ?>" style="background: none; border: none; color: var(--text-color); cursor: pointer; font-size: 18px; padding: 0; margin-top: 4px; transition: transform 0.2s;">▶</button>
+              <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                <button onclick="toggleSubtasks(<?= $task->id ?>)" id="arrow-<?= $task->id ?>" style="background: none; border: none; color: var(--text-color); cursor: pointer; font-size: 18px; padding: 0; margin: 0; transition: transform 0.2s; line-height: 1;">▶</button>
 
-                <div style="display: flex; align-items: flex-start; gap: 10px; flex: 1;">
+                <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
                   <?= $this->Form->create(null, ['url' => ['action' => 'toggleComplete', $task->id]]) ?>
-                  <input type="checkbox" <?= $task->completed ? 'checked' : '' ?> onchange="this.form.submit()" style="width: 20px; height: 20px; cursor: pointer; margin-top: 5px;">
+                  <input type="checkbox" <?= $task->completed ? 'checked' : '' ?> onchange="this.form.submit()" style="width: 20px; height: 20px; cursor: pointer; margin: 0;">
                   <?= $this->Form->end() ?>
 
                   <div id="display-container-<?= $task->id ?>" style="flex: 1;">
@@ -268,14 +268,14 @@
                   <button id="edit-btn-<?= $task->id ?>" onclick="toggleEdit(<?= $task->id ?>, true)" style="background: none; border: none; color: #2196F3; cursor: pointer; font-size: 12px;">[編集]</button>
                 </div>
               </div>
-              <div style="display: flex; gap: 10px;">
-                <button onclick="toggleSubtasks(<?= $task->id ?>, true)" style="background: #2196F3; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">サブタスク追加</button>
-                <?= $this->Form->postLink('削除', ['action' => 'delete', $task->id], ['confirm' => '削除しますか？', 'style' => 'background: #f44336; color: white; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px;']) ?>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <button onclick="toggleSubtaskForm(<?= $task->id ?>)" id="subtask-add-btn-<?= $task->id ?>" style="background: #2196F3; color: white; padding: 0 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; height: 36px; white-space: nowrap; line-height: 1; box-sizing: border-box; margin: 0;">サブタスク追加</button>
+                <?= $this->Form->postLink('削除', ['action' => 'delete', $task->id], ['confirm' => '削除しますか？', 'style' => 'background: #f44336; color: white; padding: 0 15px; border-radius: 4px; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; height: 36px; white-space: nowrap; line-height: 1; box-sizing: border-box; margin: 0;']) ?>
               </div>
             </div>
 
             <div id="expanded-area-<?= $task->id ?>" style="display: none; border-top: 1px solid var(--border-color);">
-              <div id="subtask-form-<?= $task->id ?>" style="background: var(--container-bg); padding: 15px; border-bottom: 1px solid var(--border-color);">
+              <div id="subtask-form-<?= $task->id ?>" style="display: none; background: var(--container-bg); padding: 15px; border-bottom: 1px solid var(--border-color);">
                 <?= $this->Form->create(null, ['url' => ['action' => 'addSubtask', $task->id]]) ?>
                 <div style="display: flex; flex-direction: column; gap: 10px;">
                   <?= $this->Form->control('title', ['label' => 'サブタスク名', 'required' => true, 'style' => 'width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;']) ?>
@@ -286,30 +286,55 @@
                   </div>
                   <div style="display: flex; gap: 10px;">
                     <?= $this->Form->button('追加', ['style' => 'background: #2196F3; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer;']) ?>
-                    <button type="button" onclick="toggleSubtasks(<?= $task->id ?>)" style="background: #999; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer;">キャンセル</button>
+                    <button type="button" onclick="toggleSubtaskForm(<?= $task->id ?>)" style="background: #999; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer;">キャンセル</button>
                   </div>
                 </div>
                 <?= $this->Form->end() ?>
               </div>
 
               <?php if (!empty($task->child_tasks)): ?>
-                <div style="background: var(--subtask-container-bg); padding: 10px 15px 10px 45px;">
+                <div id="subtask-list-<?= $task->id ?>" style="background: var(--subtask-container-bg); padding: 10px 15px 10px 45px;">
                   <?php foreach ($task->child_tasks as $subtask): ?>
                     <div class="subtask-item" style="background: var(--card-bg); border-left: 3px solid #2196F3; padding: 10px; margin-bottom: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; <?= $subtask->completed ? 'opacity: 0.6;' : '' ?>">
-                      <div style="flex: 1;">
-                        <div style="display: flex; align-items: flex-start; gap: 10px;">
-                          <?= $this->Form->create(null, ['url' => ['action' => 'toggleComplete', $subtask->id]]) ?>
-                          <input type="checkbox" <?= $subtask->completed ? 'checked' : '' ?> onchange="this.form.submit()" style="width: 18px; height: 18px; cursor: pointer; margin-top: 3px;">
-                          <?= $this->Form->end() ?>
-                          <div id="display-container-<?= $subtask->id ?>" style="flex: 1;">
-                            <span style="font-size: 15px; <?= $subtask->completed ? 'text-decoration: line-through;' : '' ?>"><?= h($subtask->title) ?></span>
-                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;"><?= nl2br(h($subtask->description)) ?></div>
-                          </div>
-                          <button id="edit-btn-<?= $subtask->id ?>" onclick="toggleEdit(<?= $subtask->id ?>, true)" style="background: none; border: none; color: #2196F3; cursor: pointer; font-size: 11px;">[編集]</button>
+                      <div style="flex: 1; display: flex; align-items: flex-start; gap: 10px;">
+                        <?= $this->Form->create(null, ['url' => ['action' => 'toggleComplete', $subtask->id]]) ?>
+                        <input type="checkbox" <?= $subtask->completed ? 'checked' : '' ?> onchange="this.form.submit()" style="width: 18px; height: 18px; cursor: pointer; margin-top: 3px;">
+                        <?= $this->Form->end() ?>
+                        
+                        <div id="display-container-<?= $subtask->id ?>" style="flex: 1;">
+                          <span style="font-size: 15px; <?= $subtask->completed ? 'text-decoration: line-through;' : '' ?>"><?= h($subtask->title) ?></span>
+                          <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;"><?= nl2br(h($subtask->description)) ?></div>
+                          <?php if ($subtask->start_date || $subtask->end_date): ?>
+                            <div style="font-size: 11px; margin-top: 2px; display: flex; gap: 8px;">
+                              <?php if ($subtask->start_date): ?>
+                                <span style="color: #4CAF50;">開始: <?= $subtask->start_date->format('Y/m/d') ?></span>
+                              <?php endif; ?>
+                              <?php if ($subtask->end_date): ?>
+                                <span style="color: #e91e63;">期限: <?= $subtask->end_date->format('Y/m/d') ?></span>
+                              <?php endif; ?>
+                            </div>
+                          <?php endif; ?>
                         </div>
+
+                        <div id="edit-form-<?= $subtask->id ?>" style="display: none; flex: 1; background: var(--card-bg); padding: 10px; border: 1px solid #2196F3; border-radius: 4px;">
+                          <?= $this->Form->create(null, ['url' => ['action' => 'edit', $subtask->id]]) ?>
+                          <?= $this->Form->control('title', ['label' => 'サブタスク名', 'value' => $subtask->title, 'style' => 'width: 100%; margin-bottom: 8px;']) ?>
+                          <?= $this->Form->control('description', ['label' => '概要', 'type' => 'textarea', 'rows' => 2, 'value' => $subtask->description, 'style' => 'width: 100%; margin-bottom: 8px;']) ?>
+                          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+                            <?= $this->Form->control('start_date', ['label' => '開始日', 'type' => 'date', 'value' => $subtask->start_date ? $subtask->start_date->format('Y-m-d') : '', 'style' => 'width: 100%;']) ?>
+                            <?= $this->Form->control('end_date', ['label' => '終了日（期限）', 'type' => 'date', 'value' => $subtask->end_date ? $subtask->end_date->format('Y-m-d') : '', 'style' => 'width: 100%;']) ?>
+                          </div>
+                          <div style="display: flex; gap: 5px;">
+                            <?= $this->Form->button('保存', ['style' => 'background: #4CAF50; color: white; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer;']) ?>
+                            <button type="button" onclick="toggleEdit(<?= $subtask->id ?>, false)" style="background: #999; color: white; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer;">戻る</button>
+                          </div>
+                          <?= $this->Form->end() ?>
+                        </div>
+
+                        <button id="edit-btn-<?= $subtask->id ?>" onclick="toggleEdit(<?= $subtask->id ?>, true)" style="background: none; border: none; color: #2196F3; cursor: pointer; font-size: 11px;">[編集]</button>
                       </div>
-                      <div>
-                        <?= $this->Form->postLink('削除', ['action' => 'delete', $subtask->id], ['confirm' => '削除しますか？', 'style' => 'background: #f44336; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 13px;']) ?>
+                      <div style="display: flex; align-items: center;">
+                        <?= $this->Form->postLink('削除', ['action' => 'delete', $subtask->id], ['confirm' => '削除しますか？', 'style' => 'background: #f44336; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 13px; display: inline-flex; align-items: center; height: 32px; white-space: nowrap;']) ?>
                       </div>
                     </div>
                   <?php endforeach; ?>
@@ -331,9 +356,9 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h2 style="margin: 0; font-size: 20px;">月表示</h2>
         <div style="display: flex; gap: 10px; align-items: center;">
-          <button onclick="changeMonth(-1)" style="background: #2196F3; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">前月</button>
+          <button onclick="changeMonth(-1)" style="background: #2196F3; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; height: 40px; white-space: nowrap;">前月</button>
           <h3 id="calendar-title" style="margin: 0;"></h3>
-          <button onclick="changeMonth(1)" style="background: #2196F3; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">翌月</button>
+          <button onclick="changeMonth(1)" style="background: #2196F3; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; height: 40px; white-space: nowrap;">翌月</button>
         </div>
       </div>
       <div id="calendar-container"></div>
@@ -344,9 +369,9 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h2 style="margin: 0; font-size: 20px;">週表示（ガントチャート）</h2>
         <div style="display: flex; gap: 10px; align-items: center;">
-          <button onclick="changeWeek(-1)" style="background: #2196F3; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">前週</button>
-          <button onclick="goToToday()" style="background: #f5f5f5; color: #333; border: 1px solid #ddd; padding: 8px 16px; border-radius: 4px; cursor: pointer;">今日</button>
-          <button onclick="changeWeek(1)" style="background: #2196F3; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">翌週</button>
+          <button onclick="changeWeek(-1)" style="background: #2196F3; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; height: 40px; white-space: nowrap;">前週</button>
+          <button onclick="goToToday()" style="background: #f5f5f5; color: #333; border: 1px solid #ddd; padding: 8px 16px; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; height: 40px; white-space: nowrap;">今日</button>
+          <button onclick="changeWeek(1)" style="background: #2196F3; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; height: 40px; white-space: nowrap;">翌週</button>
           <span id="week-title" style="margin-left: 15px; font-size: 14px; color: #666;"></span>
         </div>
       </div>
@@ -372,7 +397,7 @@
 
   // --- 2. ヘルパー関数 ---
 
-  // ダークモードに応じた色を取得（タイポ getAtribute -> getAttribute を修正済）
+  // ダークモードに応じた色を取得
   function getThemeColors() {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     return {
@@ -390,7 +415,7 @@
     const barCtx = document.getElementById('barChart').getContext('2d');
     const barData = statistics.barChart;
 
-    // 最大値からステップサイズを計算（元のロジックを維持）
+    // 最大値からステップサイズを計算
     const maxValue = Math.max(barData.recentAssigned, barData.today, barData.nextWeek, barData.later);
     const stepSize = maxValue <= 10 ? 2 : maxValue <= 20 ? 4 : maxValue <= 50 ? 10 : 20;
 
@@ -507,7 +532,6 @@
     const theme = getThemeColors();
     const isDark = theme.isDark;
 
-    // 元のコードのカラーロジックを反映
     const cellBg = isDark ? '#2d2d2d' : 'white';
     const headerBg = isDark ? '#252526' : '#f5f5f5';
     const textColor = theme.text;
@@ -616,7 +640,7 @@
           html += `<div style="border-right: 1px solid ${borderColor}; ${isToday ? `background: ${isDark ? '#263238' : '#f0f8ff'};` : ''}"></div>`;
         });
 
-        // バー計算ロジック（元のコードを忠実に再現）
+        // バー計算ロジック
         let barStartCol = 0;
         let barSpan = 0;
         weekDays.forEach((day, index) => {
@@ -661,25 +685,62 @@
     }
   }
 
-  // ★子タスクエリアの展開制御
-  function toggleSubtasks(taskId, showFormOnly = false) {
+  // ★サブタスクフォームの開閉制御（新規追加）
+  function toggleSubtaskForm(taskId) {
+    const form = document.getElementById('subtask-form-' + taskId);
     const area = document.getElementById('expanded-area-' + taskId);
     const arrow = document.getElementById('arrow-' + taskId);
+    
+    // エリア自体が閉じている場合は開く
+    if (area.style.display === 'none') {
+      area.style.display = 'block';
+      arrow.style.transform = 'rotate(90deg)';
+    }
+    
+    // フォームの表示切り替え
+    if (form.style.display === 'none') {
+      form.style.display = 'block';
+    } else {
+      form.style.display = 'none';
+    }
+  }
 
-    if (area.style.display === 'none' || showFormOnly) {
+  // ★子タスクエリアの展開制御（修正版）
+  function toggleSubtasks(taskId) {
+    const area = document.getElementById('expanded-area-' + taskId);
+    const arrow = document.getElementById('arrow-' + taskId);
+    const form = document.getElementById('subtask-form-' + taskId);
+
+    if (area.style.display === 'none') {
       area.style.display = 'block';
       arrow.style.transform = 'rotate(90deg)';
     } else {
       area.style.display = 'none';
       arrow.style.transform = 'rotate(0deg)';
+      // 閉じるときはフォームも閉じる
+      if (form) {
+        form.style.display = 'none';
+      }
     }
   }
 
-  // 既存の編集用関数
+  // 編集用関数（修正版 - サブタスクのバグ修正）
   function toggleEdit(id, show) {
-    document.getElementById('display-container-' + id).style.display = show ? 'none' : 'block';
-    document.getElementById('edit-form-' + id).style.display = show ? 'block' : 'none';
-    document.getElementById('edit-btn-' + id).style.display = show ? 'none' : 'inline-block';
+    const displayContainer = document.getElementById('display-container-' + id);
+    const editForm = document.getElementById('edit-form-' + id);
+    const editBtn = document.getElementById('edit-btn-' + id);
+    
+    if (show) {
+      // 編集モードに切り替え
+      if (displayContainer) displayContainer.style.display = 'none';
+      if (editBtn) editBtn.style.display = 'none';
+      if (editForm) editForm.style.display = 'block';
+    } else {
+      // 表示モードに戻す
+      if (displayContainer) displayContainer.style.display = 'block';
+      if (editBtn) editBtn.style.display = 'inline-block';
+      if (editForm) editForm.style.display = 'none';
+    }
   }
 
   // --- 6. タブ・テーマ・初期化 ---
@@ -707,7 +768,7 @@
     }
 
     if (tabName === 'dashboard') {
-      renderCharts(); // 表示時に再描画してサイズを確定
+      renderCharts();
     } else if (tabName === 'calendar') {
       renderCalendar();
       renderGanttChart();
@@ -719,11 +780,11 @@
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     if (isDark) {
       document.documentElement.removeAttribute('data-theme');
-      toggleBtn.innerText = '🌙 ダークモード';
+      toggleBtn.innerHTML = '<span>🌙</span> <span>ダークモード</span>';
       localStorage.setItem('theme', 'light');
     } else {
       document.documentElement.setAttribute('data-theme', 'dark');
-      toggleBtn.innerText = '☀️ ライトモード';
+      toggleBtn.innerHTML = '<span>☀️</span> <span>ライトモード</span>';
       localStorage.setItem('theme', 'dark');
     }
 
@@ -740,10 +801,10 @@
     // テーマ復元
     if (localStorage.getItem('theme') === 'dark') {
       document.documentElement.setAttribute('data-theme', 'dark');
-      toggleBtn.innerText = '☀️ ライトモード';
+      toggleBtn.innerHTML = '<span>☀️</span> <span>ライトモード</span>';
     }
 
-    // URLパラメータによる初期タブ設定（元のロジックを完全再現）
+    // URLパラメータによる初期タブ設定
     const urlParams = new URLSearchParams(window.location.search);
     const tabParam = urlParams.get('tab');
     if (tabParam && document.getElementById(tabParam + '-view')) {
@@ -758,25 +819,9 @@
         }
       });
     } else {
-      renderCharts(); // デフォルト（ダッシュボード）
+      renderCharts();
     }
   });
-
-  // その他（編集、カレンダー操作など）
-  function toggleEdit(id, isEdit) {
-    const disp = document.getElementById('display-container-' + id);
-    const form = document.getElementById('edit-form-' + id);
-    const btn = document.getElementById('edit-btn-' + id);
-    if (isEdit) {
-      if (disp) disp.style.display = 'none';
-      btn.style.display = 'none';
-      form.style.display = 'block';
-    } else {
-      if (disp) disp.style.display = 'block';
-      btn.style.display = 'inline-block';
-      form.style.display = 'none';
-    }
-  }
 
   function changeMonth(dir) {
     currentDate.setMonth(currentDate.getMonth() + dir);
