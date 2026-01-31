@@ -61,10 +61,10 @@ class DashboardController extends AppController
         // ダッシュボード用の統計データ
         $this->set('statistics', $this->getStatistics());
 
-        //カレンダー用のタスクデータ
+        //カレンダー用のタスクデータ（親タスクのみに修正）
         $this->set('calendarTasks', $this->getCalendarTasks());
 
-        //ガントチャート用のデータ
+        //ガントチャート用のデータ（親タスクのみに修正）
         $this->set('ganttTasks', $this->getGanttTasks());
 
 
@@ -156,19 +156,42 @@ class DashboardController extends AppController
 
     private function getCalendarTasks()
     {
+        // 親タスクのみを取得（タスクリストと同じ条件）
         $tasks = $this->Tasks->find('all', [
+            'conditions' => ['Tasks.parent_id IS' => null],
             'contain' => ['ChildTasks'],
             'order' => ['Tasks.end_date' => 'ASC']
         ])->toArray();
 
         $calendarData = [];
+        
+        // 親タスクをカレンダーに追加
         foreach ($tasks as $task) {
             if ($task->end_date) {
                 $date = $task->end_date->format('Y-m-d');
                 if (!isset($calendarData[$date])) {
                     $calendarData[$date] = [];
                 }
-                $calendarData[$date][] = $task;
+                $calendarData[$date][] = [
+                    'id' => $task->id,
+                    'title' => $task->title,
+                    'completed' => $task->completed
+                ];
+            }
+            
+            // サブタスクもカレンダーに追加
+            foreach ($task->child_tasks as $subtask) {
+                if ($subtask->end_date) {
+                    $date = $subtask->end_date->format('Y-m-d');
+                    if (!isset($calendarData[$date])) {
+                        $calendarData[$date] = [];
+                    }
+                    $calendarData[$date][] = [
+                        'id' => $subtask->id,
+                        'title' => '┗ ' . $subtask->title,
+                        'completed' => $subtask->completed
+                    ];
+                }
             }
         }
 
@@ -177,7 +200,9 @@ class DashboardController extends AppController
 
     private function getGanttTasks(): array
     {
+        // 親タスクのみを取得（タスクリストと同じ条件）
         $tasks = $this->Tasks->find('all', [
+            'conditions' => ['Tasks.parent_id IS' => null],
             'contain' => ['ChildTasks'],
             'order' => ['Tasks.start_date' => 'ASC']
         ])->toArray();
