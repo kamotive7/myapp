@@ -33,6 +33,7 @@ class Task extends Entity
         'title' => true,
         'description' => true,
         'priority' => true,
+        'sort_order' => true,
         'start_date' => true,
         'end_date' => true,
         'due_date' => true,

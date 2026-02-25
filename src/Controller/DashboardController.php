@@ -96,6 +96,9 @@ class DashboardController extends AppController
             case 'title':
                 $query->order(['Tasks.title' => 'ASC']);
                 break;
+            case 'manual':
+                $query->order(['Tasks.sort_order' => 'ASC', 'Tasks.created' => 'DESC']);
+                break;
             default: // end_date
                 $query->order(['Tasks.end_date' => 'ASC', 'Tasks.created' => 'DESC']);
         }
@@ -375,5 +378,25 @@ class DashboardController extends AppController
         $session = $this->request->getSession();
         $session->write('current_tab', 'list');
         return $this->redirect(['action' => 'index', '?' => ['tab' => 'list']]);
+    }
+
+    public function reorder()
+    {
+        $this->request->allowMethod(['post']);
+        $this->autoRender = false;
+
+        $taskIds = $this->request->getData('task_ids');
+
+        if (!empty($taskIds)) {
+            foreach ($taskIds as $order => $taskId) {
+                $task = $this->Tasks->get($taskId);
+                $task->sort_order = $order;
+                $this->Tasks->save($task);
+            }
+
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false]);
+        }
     }
 }

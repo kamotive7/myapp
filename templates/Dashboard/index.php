@@ -231,6 +231,7 @@
             <option value="priority" <?= $sortBy === 'priority' ? 'selected' : '' ?>>優先度順</option>
             <option value="created" <?= $sortBy === 'created' ? 'selected' : '' ?>>作成日順</option>
             <option value="title" <?= $sortBy === 'title' ? 'selected' : '' ?>>タスク名順</option>
+            <option value="manual" <?= $sortBy === 'manual' ? 'selected' : '' ?>>手動並び替え</option>
           </select>
         </div>
 
@@ -309,10 +310,21 @@
 
     <div class="tasks-list">
       <h2 style="margin-bottom: 20px;">タスク一覧</h2>
+      
+      <?php if ($sortBy === 'manual'): ?>
+        <div style="background: #e3f2fd; padding: 10px 15px; border-radius: 4px; margin-bottom: 15px; font-size: 14px; color: #1976d2;">
+          <strong>💡 ドラッグ&ドロップでタスクを並び替えできます</strong>
+        </div>
+      <?php endif; ?>
+
       <?php if (isset($tasks) && $tasks->count() > 0): ?>
+        <div id="task-list-container">
         <?php foreach ($tasks as $task): ?>
-          <div class="task-parent" style="margin-bottom: 20px; border: 2px solid var(--border-color); border-radius: 8px; overflow: hidden; background: var(--card-bg);">
+          <div class="task-parent <?= $sortBy === 'manual' ? 'draggable' : '' ?>" data-task-id="<?= $task->id ?>" draggable="<?= $sortBy === 'manual' ? 'true' : 'false' ?>" style="margin-bottom: 20px; border: 2px solid var(--border-color); border-radius: 8px; overflow: hidden; background: var(--card-bg); <?= $sortBy === 'manual' ? 'cursor: move;' : '' ?>">
             <div class="task-item" style="padding: 15px; display: flex; justify-content: space-between; align-items: center; <?= $task->completed ? 'opacity: 0.6;' : '' ?>">
+              <?php if ($sortBy === 'manual'): ?>
+                <div class="drag-handle" style="cursor: grab; padding: 0 10px; color: var(--text-muted); font-size: 20px; margin-right: 10px;" title="ドラッグして並び替え">⋮⋮</div>
+              <?php endif; ?>
               <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
                 <button onclick="toggleSubtasks(<?= $task->id ?>)" id="arrow-<?= $task->id ?>" style="background: none; border: none; color: var(--text-color); cursor: pointer; font-size: 18px; padding: 0; margin: 0; transition: transform 0.2s; line-height: 1;">▶</button>
 
@@ -473,6 +485,7 @@
             </div>
           </div>
         <?php endforeach; ?>
+        </div>
       <?php else: ?>
         <p style="text-align: center; color: var(--text-muted); padding: 40px 0;">タスクがありません。</p>
       <?php endif; ?>
@@ -909,11 +922,15 @@
     if (target) target.style.display = 'block';
 
     // クリックイベント経由の場合のボタン装飾
-    if (event && event.target && event.target.classList.contains('tab-btn')) {
-      event.target.classList.add('active');
-      event.target.style.borderBottomColor = '#2196F3';
-      event.target.style.fontWeight = 'bold';
-      event.target.style.color = '#2196F3';
+    try {
+      if (window.event && window.event.target && window.event.target.classList && window.event.target.classList.contains('tab-btn')) {
+        window.event.target.classList.add('active');
+        window.event.target.style.borderBottomColor = '#2196F3';
+        window.event.target.style.fontWeight = 'bold';
+        window.event.target.style.color = '#2196F3';
+      }
+    } catch (e) {
+      // イベントがない場合は無視
     }
 
     if (tabName === 'dashboard') {
@@ -921,6 +938,9 @@
     } else if (tabName === 'calendar') {
       renderCalendar();
       renderGanttChart();
+    } else if (tabName === 'list') {
+      // タスクリストタブに切り替えた時にドラッグ&ドロップを初期化
+      setTimeout(() => initDragAndDrop(), 100);
     }
   }
 
@@ -967,6 +987,11 @@
           btn.style.fontWeight = 'bold';
         }
       });
+      
+      // タスクリストタブの場合、ドラッグ&ドロップを初期化
+      if (tabParam === 'list') {
+        initDragAndDrop();
+      }
     } else {
       renderCharts();
     }
@@ -987,5 +1012,105 @@
     currentWeekStart = new Date(today);
     currentWeekStart.setDate(today.getDate() - today.getDay());
     renderGanttChart();
+  }
+
+  // --- 7. ドラッグ&ドロップ機能 ---
+  
+  let draggedElement = null;
+
+  function initDragAndDrop() {
+    const container = document.getElementById('task-list-container');
+    if (!container) return;
+
+    const draggables = container.querySelectorAll('.draggable');
+    
+    draggables.forEach(draggable => {
+      draggable.addEventListener('dragstart', handleDragStart);
+      draggable.addEventListener('dragover', handleDragOver);
+      draggable.addEventListener('drop', handleDrop);
+      draggable.addEventListener('dragend', handleDragEnd);
+      draggable.addEventListener('dragenter', handleDragEnter);
+      draggable.addEventListener('dragleave', handleDragLeave);
+    });
+  }
+
+  function handleDragStart(e) {
+    draggedElement = this;
+    this.style.opacity = '0.4';
+    e.dataTransfer.effectAllowed = 'move';
+  }
+
+  function handleDragOver(e) {
+    if (e.preventDefault) {
+      e.preventDefault();
+    }
+    e.dataTransfer.dropEffect = 'move';
+    return false;
+  }
+
+  function handleDragEnter(e) {
+    if (this !== draggedElement) {
+      this.style.borderTop = '3px solid #2196F3';
+    }
+  }
+
+  function handleDragLeave(e) {
+    this.style.borderTop = '';
+  }
+
+  function handleDrop(e) {
+    if (e.stopPropagation) {
+      e.stopPropagation();
+    }
+
+    if (draggedElement !== this) {
+      const container = document.getElementById('task-list-container');
+      const allTasks = Array.from(container.children);
+      const draggedIndex = allTasks.indexOf(draggedElement);
+      const targetIndex = allTasks.indexOf(this);
+
+      if (draggedIndex < targetIndex) {
+        this.parentNode.insertBefore(draggedElement, this.nextSibling);
+      } else {
+        this.parentNode.insertBefore(draggedElement, this);
+      }
+
+      saveTaskOrder();
+    }
+
+    this.style.borderTop = '';
+    return false;
+  }
+
+  function handleDragEnd(e) {
+    this.style.opacity = '1';
+    
+    const draggables = document.querySelectorAll('.draggable');
+    draggables.forEach(draggable => {
+      draggable.style.borderTop = '';
+    });
+  }
+
+  function saveTaskOrder() {
+    const container = document.getElementById('task-list-container');
+    const taskIds = Array.from(container.children).map(el => el.dataset.taskId);
+
+    fetch('<?= $this->Url->build(['action' => 'reorder']) ?>', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': '<?= $this->request->getAttribute('csrfToken') ?>'
+      },
+      body: JSON.stringify({ task_ids: taskIds })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        console.log('並び順を保存しました');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
   }
 </script>
