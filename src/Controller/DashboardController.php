@@ -105,6 +105,22 @@ class DashboardController extends AppController
 
         $tasks = $query->all();
 
+        // 各タスクに進捗率を計算
+        foreach ($tasks as $task) {
+            if (!empty($task->child_tasks)) {
+                $totalSubtasks = count($task->child_tasks);
+                $completedSubtasks = 0;
+                foreach ($task->child_tasks as $subtask) {
+                    if ($subtask->completed) {
+                        $completedSubtasks++;
+                    }
+                }
+                $task->progress = $totalSubtasks > 0 ? round(($completedSubtasks / $totalSubtasks) * 100) : 0;
+            } else {
+                $task->progress = $task->completed ? 100 : 0;
+            }
+        }
+
         // 検索条件をビューに渡す
         $this->set(compact('tasks', 'searchKeyword', 'filterCompleted', 'filterPriority', 'sortBy'));
 
@@ -187,6 +203,25 @@ class DashboardController extends AppController
             return !$task->end_date || $task->end_date >= $nextWeekEnd;
         }));
 
+        // 平均進捗率を計算
+        $totalProgress = 0;
+        $tasksWithSubtasks = 0;
+        foreach ($allTasks as $task) {
+            if ($task->parent_id === null) { // 親タスクのみ
+                $subtasks = array_filter($allTasks, fn($t) => $t->parent_id === $task->id);
+                if (!empty($subtasks)) {
+                    $completedSubtasks = count(array_filter($subtasks, fn($st) => $st->completed));
+                    $progress = round(($completedSubtasks / count($subtasks)) * 100);
+                    $totalProgress += $progress;
+                    $tasksWithSubtasks++;
+                } else {
+                    $totalProgress += $task->completed ? 100 : 0;
+                    $tasksWithSubtasks++;
+                }
+            }
+        }
+        $avgProgress = $tasksWithSubtasks > 0 ? round($totalProgress / $tasksWithSubtasks) : 0;
+
         return [
             'total' => $totalTasks,
             'completed' => $completedTasks,
@@ -195,6 +230,7 @@ class DashboardController extends AppController
             'nextMonthTotal' => count($nextMonthTasks),
             'nextMonthCompleted' => $nextMonthCompleted,
             'nextMonthIncomplete' => $nextMonthIncomplete,
+            'avgProgress' => $avgProgress,
             'barChart' => [
                 'recentAssigned' => $recentAssigned,
                 'today' => $todayTasks,

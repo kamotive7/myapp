@@ -165,6 +165,10 @@
         <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">期限超過</div>
         <div style="font-size: 36px; font-weight: bold;"><?= $statistics['overdue'] ?></div>
       </div>
+      <div style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">平均進捗率</div>
+        <div style="font-size: 36px; font-weight: bold;"><?= isset($statistics['avgProgress']) ? $statistics['avgProgress'] : 0 ?>%</div>
+      </div>
     </div>
 
     <!-- グラフエリア -->
@@ -348,6 +352,29 @@
                       <span style="background: <?= $color['bg'] ?>; color: <?= $color['text'] ?>; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold;"><?= $color['label'] ?></span>
                     </div>
                     <div style="font-size: 14px; color: var(--text-muted); margin-top: 4px;"><?= nl2br(h($task->description)) ?></div>
+                    
+                    <?php if (!empty($task->child_tasks)): ?>
+                      <!-- 進捗率バー -->
+                      <div style="margin-top: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                          <span style="font-size: 12px; color: var(--text-muted);">進捗率</span>
+                          <span style="font-size: 12px; font-weight: bold; color: <?= $task->progress == 100 ? '#4CAF50' : '#2196F3' ?>;"><?= $task->progress ?>%</span>
+                        </div>
+                        <div style="width: 100%; height: 8px; background: var(--border-color); border-radius: 4px; overflow: hidden;">
+                          <div style="height: 100%; background: <?= $task->progress == 100 ? '#4CAF50' : '#2196F3' ?>; width: <?= $task->progress ?>%; transition: width 0.3s ease;"></div>
+                        </div>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+                          <?php
+                            $completedCount = 0;
+                            foreach ($task->child_tasks as $st) {
+                              if ($st->completed) $completedCount++;
+                            }
+                          ?>
+                          <?= $completedCount ?> / <?= count($task->child_tasks) ?> サブタスク完了
+                        </div>
+                      </div>
+                    <?php endif; ?>
+                    
                     <?php if ($task->start_date || $task->end_date): ?>
                       <div style="font-size: 13px; margin-top: 4px; display: flex; gap: 10px;">
                         <?php if ($task->start_date): ?>
