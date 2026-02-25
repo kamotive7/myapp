@@ -192,6 +192,80 @@
 
   <!-- タスクリスト画面 -->
   <div id="list-view" class="tab-content" style="display: none;">
+    <!-- 検索・フィルターエリア -->
+    <div style="background: var(--card-bg); padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border-color);">
+      <?= $this->Form->create(null, ['type' => 'get', 'url' => ['action' => 'index', '?' => ['tab' => 'list']]]) ?>
+      <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 15px; align-items: end;">
+        <!-- 検索キーワード -->
+        <div>
+          <label style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">検索</label>
+          <input type="text" name="search" value="<?= h($searchKeyword) ?>" placeholder="タスク名・概要で検索..." style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--card-bg); color: var(--text-color);">
+        </div>
+
+        <!-- 完了状態フィルター -->
+        <div>
+          <label style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">状態</label>
+          <select name="completed" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--card-bg); color: var(--text-color);">
+            <option value="">すべて</option>
+            <option value="0" <?= $filterCompleted === '0' ? 'selected' : '' ?>>未完了</option>
+            <option value="1" <?= $filterCompleted === '1' ? 'selected' : '' ?>>完了</option>
+          </select>
+        </div>
+
+        <!-- 優先度フィルター -->
+        <div>
+          <label style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">優先度</label>
+          <select name="priority" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--card-bg); color: var(--text-color);">
+            <option value="">すべて</option>
+            <option value="high" <?= $filterPriority === 'high' ? 'selected' : '' ?>>高</option>
+            <option value="medium" <?= $filterPriority === 'medium' ? 'selected' : '' ?>>中</option>
+            <option value="low" <?= $filterPriority === 'low' ? 'selected' : '' ?>>低</option>
+          </select>
+        </div>
+
+        <!-- ソート -->
+        <div>
+          <label style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color);">並び順</label>
+          <select name="sort" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--card-bg); color: var(--text-color);">
+            <option value="end_date" <?= $sortBy === 'end_date' ? 'selected' : '' ?>>期限順</option>
+            <option value="priority" <?= $sortBy === 'priority' ? 'selected' : '' ?>>優先度順</option>
+            <option value="created" <?= $sortBy === 'created' ? 'selected' : '' ?>>作成日順</option>
+            <option value="title" <?= $sortBy === 'title' ? 'selected' : '' ?>>タスク名順</option>
+          </select>
+        </div>
+
+        <!-- 検索ボタン -->
+        <div style="display: flex; gap: 5px;">
+          <button type="submit" style="background: #2196F3; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap;">絞り込み</button>
+          <a href="<?= $this->Url->build(['action' => 'index', '?' => ['tab' => 'list']]) ?>" style="background: var(--text-muted); color: white; padding: 10px 15px; border-radius: 4px; text-decoration: none; display: inline-flex; align-items: center; white-space: nowrap;">クリア</a>
+        </div>
+      </div>
+      <input type="hidden" name="tab" value="list">
+      <?= $this->Form->end() ?>
+
+      <!-- 検索結果表示 -->
+      <?php if (!empty($searchKeyword) || $filterCompleted !== '' || !empty($filterPriority)): ?>
+        <div style="margin-top: 15px; padding: 10px; background: var(--task-form-bg); border-radius: 4px; font-size: 14px; color: var(--text-color);">
+          <strong>絞り込み中:</strong>
+          <?php if (!empty($searchKeyword)): ?>
+            <span style="margin-left: 10px; padding: 3px 8px; background: #2196F3; color: white; border-radius: 12px; font-size: 12px;">検索: <?= h($searchKeyword) ?></span>
+          <?php endif; ?>
+          <?php if ($filterCompleted === '0'): ?>
+            <span style="margin-left: 10px; padding: 3px 8px; background: #4CAF50; color: white; border-radius: 12px; font-size: 12px;">未完了のみ</span>
+          <?php elseif ($filterCompleted === '1'): ?>
+            <span style="margin-left: 10px; padding: 3px 8px; background: #9e9e9e; color: white; border-radius: 12px; font-size: 12px;">完了のみ</span>
+          <?php endif; ?>
+          <?php if (!empty($filterPriority)): ?>
+            <?php 
+              $priorityLabels = ['high' => '高', 'medium' => '中', 'low' => '低'];
+              $priorityColors = ['high' => '#c62828', 'medium' => '#ef6c00', 'low' => '#2e7d32'];
+            ?>
+            <span style="margin-left: 10px; padding: 3px 8px; background: <?= $priorityColors[$filterPriority] ?>; color: white; border-radius: 12px; font-size: 12px;">優先度: <?= $priorityLabels[$filterPriority] ?></span>
+          <?php endif; ?>
+        </div>
+      <?php endif; ?>
+    </div>
+
     <div style="margin-bottom: 20px;">
       <button id="main-form-toggle-btn" onclick="toggleMainForm()" style="background: #4CAF50; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 15px; display: inline-flex; align-items: center; gap: 8px; line-height: 1;">
         <span id="main-form-icon">+</span> <span>新しいタスクを追加</span>

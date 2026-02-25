@@ -50,13 +50,60 @@ class DashboardController extends AppController
 
         $this->set('currentTab', $currentTab);
 
-        $tasks = $this->Tasks->find('all', [
+        // 検索・フィルター条件の取得
+        $searchKeyword = $this->request->getQuery('search', '');
+        $filterCompleted = $this->request->getQuery('completed', '');
+        $filterPriority = $this->request->getQuery('priority', '');
+        $sortBy = $this->request->getQuery('sort', 'end_date');
+
+        // クエリビルダーで条件を構築
+        $query = $this->Tasks->find('all', [
             'conditions' => ['Tasks.parent_id IS' => null],
-            'contain' => ['ChildTasks'],
-            'order' => ['Tasks.end_date' => 'ASC', 'Tasks.created' => 'DESC']
+            'contain' => ['ChildTasks']
         ]);
 
-        $this->set(compact('tasks'));
+        // 検索条件（タスク名または概要）
+        if (!empty($searchKeyword)) {
+            $query->where([
+                'OR' => [
+                    'Tasks.title LIKE' => '%' . $searchKeyword . '%',
+                    'Tasks.description LIKE' => '%' . $searchKeyword . '%'
+                ]
+            ]);
+        }
+
+        // 完了/未完了フィルター
+        if ($filterCompleted !== '') {
+            $query->where(['Tasks.completed' => (bool)$filterCompleted]);
+        }
+
+        // 優先度フィルター
+        if (!empty($filterPriority)) {
+            $query->where(['Tasks.priority' => $filterPriority]);
+        }
+
+        // ソート
+        switch ($sortBy) {
+            case 'priority':
+                $query->order([
+                    'CASE WHEN Tasks.priority = \'high\' THEN 1 WHEN Tasks.priority = \'medium\' THEN 2 WHEN Tasks.priority = \'low\' THEN 3 ELSE 4 END' => 'ASC',
+                    'Tasks.end_date' => 'ASC'
+                ]);
+                break;
+            case 'created':
+                $query->order(['Tasks.created' => 'DESC']);
+                break;
+            case 'title':
+                $query->order(['Tasks.title' => 'ASC']);
+                break;
+            default: // end_date
+                $query->order(['Tasks.end_date' => 'ASC', 'Tasks.created' => 'DESC']);
+        }
+
+        $tasks = $query->all();
+
+        // 検索条件をビューに渡す
+        $this->set(compact('tasks', 'searchKeyword', 'filterCompleted', 'filterPriority', 'sortBy'));
 
         // ダッシュボード用の統計データ
         $this->set('statistics', $this->getStatistics());
