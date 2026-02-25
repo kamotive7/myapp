@@ -175,7 +175,8 @@ class DashboardController extends AppController
                 $calendarData[$date][] = [
                     'id' => $task->id,
                     'title' => $task->title,
-                    'completed' => $task->completed
+                    'completed' => $task->completed,
+                    'priority' => $task->priority ?? 'medium'
                 ];
             }
             
@@ -189,7 +190,8 @@ class DashboardController extends AppController
                     $calendarData[$date][] = [
                         'id' => $subtask->id,
                         'title' => '┗ ' . $subtask->title,
-                        'completed' => $subtask->completed
+                        'completed' => $subtask->completed,
+                        'priority' => $subtask->priority ?? 'medium'
                     ];
                 }
             }
@@ -219,6 +221,7 @@ class DashboardController extends AppController
                     'start_date' => $task->start_date->format('Y-m-d'),
                     'end_date' => $task->end_date->format('Y-m-d'),
                     'completed' => $task->completed,
+                    'priority' => $task->priority ?? 'medium',
                     'type' => 'parent'
                 ];
             }
@@ -233,6 +236,7 @@ class DashboardController extends AppController
                         'start_date' => $subtask->start_date->format('Y-m-d'),
                         'end_date' => $subtask->end_date->format('Y-m-d'),
                         'completed' => $subtask->completed,
+                        'priority' => $subtask->priority ?? 'medium',
                         'type' => 'child',
                         'parent_id' => $task->id
                     ];

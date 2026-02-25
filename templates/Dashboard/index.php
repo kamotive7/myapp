@@ -206,6 +206,18 @@
       <div style="margin-bottom: 15px;">
         <?= $this->Form->control('description', ['label' => '概要', 'type' => 'textarea', 'rows' => 2, 'placeholder' => 'タスクの詳細を入力...', 'style' => 'width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px;']) ?>
       </div>
+      <div style="margin-bottom: 15px;">
+        <?= $this->Form->control('priority', [
+          'label' => '優先度',
+          'type' => 'select',
+          'options' => [
+            'high' => '高',
+            'medium' => '中',
+            'low' => '低'
+          ],
+          'style' => 'width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px;'
+        ]) ?>
+      </div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
         <div>
           <?= $this->Form->control('start_date', ['label' => '開始日', 'type' => 'date', 'style' => 'width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px;']) ?>
@@ -236,7 +248,19 @@
                   <?= $this->Form->end() ?>
 
                   <div id="display-container-<?= $task->id ?>" style="flex: 1;">
-                    <span style="font-size: 18px; font-weight: bold; <?= $task->completed ? 'text-decoration: line-through;' : '' ?>"><?= h($task->title) ?></span>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                      <span style="font-size: 18px; font-weight: bold; <?= $task->completed ? 'text-decoration: line-through;' : '' ?>"><?= h($task->title) ?></span>
+                      <?php
+                        $priorityColors = [
+                          'high' => ['bg' => '#ffebee', 'text' => '#c62828', 'label' => '高'],
+                          'medium' => ['bg' => '#fff3e0', 'text' => '#ef6c00', 'label' => '中'],
+                          'low' => ['bg' => '#e8f5e9', 'text' => '#2e7d32', 'label' => '低']
+                        ];
+                        $priority = $task->priority ?? 'medium';
+                        $color = $priorityColors[$priority];
+                      ?>
+                      <span style="background: <?= $color['bg'] ?>; color: <?= $color['text'] ?>; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold;"><?= $color['label'] ?></span>
+                    </div>
                     <div style="font-size: 14px; color: var(--text-muted); margin-top: 4px;"><?= nl2br(h($task->description)) ?></div>
                     <?php if ($task->start_date || $task->end_date): ?>
                       <div style="font-size: 13px; margin-top: 4px; display: flex; gap: 10px;">
@@ -254,6 +278,13 @@
                     <?= $this->Form->create(null, ['url' => ['action' => 'edit', $task->id]]) ?>
                     <?= $this->Form->control('title', ['label' => 'タスク名', 'value' => $task->title, 'style' => 'width: 100%; margin-bottom: 8px;']) ?>
                     <?= $this->Form->control('description', ['label' => '概要', 'type' => 'textarea', 'rows' => 2, 'value' => $task->description, 'style' => 'width: 100%; margin-bottom: 8px;']) ?>
+                    <?= $this->Form->control('priority', [
+                      'label' => '優先度',
+                      'type' => 'select',
+                      'options' => ['high' => '高', 'medium' => '中', 'low' => '低'],
+                      'value' => $task->priority ?? 'medium',
+                      'style' => 'width: 100%; margin-bottom: 8px;'
+                    ]) ?>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
                       <?= $this->Form->control('start_date', ['label' => '開始日', 'type' => 'date', 'value' => $task->start_date ? $task->start_date->format('Y-m-d') : '', 'style' => 'width: 100%;']) ?>
                       <?= $this->Form->control('end_date', ['label' => '終了日（期限）', 'type' => 'date', 'value' => $task->end_date ? $task->end_date->format('Y-m-d') : '', 'style' => 'width: 100%;']) ?>
@@ -280,6 +311,12 @@
                 <div style="display: flex; flex-direction: column; gap: 10px;">
                   <?= $this->Form->control('title', ['label' => 'サブタスク名', 'required' => true, 'style' => 'width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;']) ?>
                   <?= $this->Form->control('description', ['label' => '概要', 'type' => 'textarea', 'rows' => 2, 'placeholder' => 'サブタスクの詳細...', 'style' => 'width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;']) ?>
+                  <?= $this->Form->control('priority', [
+                    'label' => '優先度',
+                    'type' => 'select',
+                    'options' => ['high' => '高', 'medium' => '中', 'low' => '低'],
+                    'style' => 'width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;'
+                  ]) ?>
                   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                     <?= $this->Form->control('start_date', ['label' => '開始日', 'type' => 'date', 'style' => 'width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;']) ?>
                     <?= $this->Form->control('end_date', ['label' => '終了日（期限）', 'type' => 'date', 'style' => 'width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;']) ?>
@@ -302,7 +339,19 @@
                         <?= $this->Form->end() ?>
                         
                         <div id="display-container-<?= $subtask->id ?>" style="flex: 1;">
-                          <span style="font-size: 15px; <?= $subtask->completed ? 'text-decoration: line-through;' : '' ?>"><?= h($subtask->title) ?></span>
+                          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+                            <span style="font-size: 15px; <?= $subtask->completed ? 'text-decoration: line-through;' : '' ?>"><?= h($subtask->title) ?></span>
+                            <?php
+                              $priorityColors = [
+                                'high' => ['bg' => '#ffebee', 'text' => '#c62828', 'label' => '高'],
+                                'medium' => ['bg' => '#fff3e0', 'text' => '#ef6c00', 'label' => '中'],
+                                'low' => ['bg' => '#e8f5e9', 'text' => '#2e7d32', 'label' => '低']
+                              ];
+                              $priority = $subtask->priority ?? 'medium';
+                              $color = $priorityColors[$priority];
+                            ?>
+                            <span style="background: <?= $color['bg'] ?>; color: <?= $color['text'] ?>; padding: 1px 6px; border-radius: 10px; font-size: 10px; font-weight: bold;"><?= $color['label'] ?></span>
+                          </div>
                           <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;"><?= nl2br(h($subtask->description)) ?></div>
                           <?php if ($subtask->start_date || $subtask->end_date): ?>
                             <div style="font-size: 11px; margin-top: 2px; display: flex; gap: 8px;">
@@ -320,6 +369,13 @@
                           <?= $this->Form->create(null, ['url' => ['action' => 'edit', $subtask->id]]) ?>
                           <?= $this->Form->control('title', ['label' => 'サブタスク名', 'value' => $subtask->title, 'style' => 'width: 100%; margin-bottom: 8px;']) ?>
                           <?= $this->Form->control('description', ['label' => '概要', 'type' => 'textarea', 'rows' => 2, 'value' => $subtask->description, 'style' => 'width: 100%; margin-bottom: 8px;']) ?>
+                          <?= $this->Form->control('priority', [
+                            'label' => '優先度',
+                            'type' => 'select',
+                            'options' => ['high' => '高', 'medium' => '中', 'low' => '低'],
+                            'value' => $subtask->priority ?? 'medium',
+                            'style' => 'width: 100%; margin-bottom: 8px;'
+                          ]) ?>
                           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
                             <?= $this->Form->control('start_date', ['label' => '開始日', 'type' => 'date', 'value' => $subtask->start_date ? $subtask->start_date->format('Y-m-d') : '', 'style' => 'width: 100%;']) ?>
                             <?= $this->Form->control('end_date', ['label' => '終了日（期限）', 'type' => 'date', 'value' => $subtask->end_date ? $subtask->end_date->format('Y-m-d') : '', 'style' => 'width: 100%;']) ?>
@@ -561,10 +617,20 @@
       html += `<div style="font-weight: bold; margin-bottom: 5px; color: ${isToday ? todayBorder : textColor}; font-size: 14px;">${day}</div>`;
 
       tasksForDay.forEach(task => {
-        const bgColor = task.completed ? completedTaskBg : taskBg;
+        // 優先度による色設定
+        const priorityColors = {
+          high: { bg: isDark ? '#8b0000' : '#ffcdd2', border: '#c62828' },
+          medium: { bg: isDark ? '#e65100' : '#ffe0b2', border: '#ef6c00' },
+          low: { bg: isDark ? '#2e7d32' : '#c8e6c9', border: '#388e3c' }
+        };
+        const priority = task.priority || 'medium';
+        const priorityColor = priorityColors[priority];
+        
+        const bgColor = task.completed ? completedTaskBg : priorityColor.bg;
+        const borderLeft = task.completed ? completedTaskBg : priorityColor.border;
         const textDeco = task.completed ? 'line-through' : 'none';
         const taskTextColor = isDark ? '#e8e8e8' : '#1a1a1a';
-        html += `<div style="background: ${bgColor}; padding: 4px 6px; margin-bottom: 3px; border-radius: 3px; font-size: 11px; text-decoration: ${textDeco}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: ${taskTextColor}; font-weight: 500;" title="${task.title}">${task.title}</div>`;
+        html += `<div style="background: ${bgColor}; border-left: 3px solid ${borderLeft}; padding: 4px 6px; margin-bottom: 3px; border-radius: 3px; font-size: 11px; text-decoration: ${textDeco}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: ${taskTextColor}; font-weight: 500;" title="${task.title}">${task.title}</div>`;
       });
       html += '</div>';
     }
@@ -652,7 +718,16 @@
         if (tStart < weekStart) barStartCol = 0;
         if (tEnd > wEnd) barSpan = 7 - barStartCol;
 
-        let barColor = task.completed ? '#9e9e9e' : (task.type === 'child' ? '#90caf9' : '#42a5f5');
+        // 優先度による色設定
+        const priorityColors = {
+          high: { parent: '#e53935', child: '#ef5350' },
+          medium: { parent: '#fb8c00', child: '#ffa726' },
+          low: { parent: '#43a047', child: '#66bb6a' }
+        };
+        const priority = task.priority || 'medium';
+        const colorSet = priorityColors[priority];
+        
+        let barColor = task.completed ? '#9e9e9e' : (task.type === 'child' ? colorSet.child : colorSet.parent);
         const bRadiusL = tStart >= weekStart ? '16px' : '0';
         const bRadiusR = tEnd <= wEnd ? '16px' : '0';
 
