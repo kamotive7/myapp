@@ -372,6 +372,11 @@ class DashboardController extends AppController
         $task->completed = !$task->completed;
 
         if ($this->Tasks->save($task)) {
+            // 繰り返しタスクの場合、完了時に次回分を生成
+            if ($task->completed && $task->is_recurring && $task->recurring_type) {
+                $this->createNextRecurringTask($task);
+            }
+            
             $this->Flash->success('タスクを更新しました。');
         } else {
             $this->Flash->error('更新に失敗しました。');
@@ -380,6 +385,58 @@ class DashboardController extends AppController
         $session = $this->request->getSession();
         $session->write('current_tab', 'list');
         return $this->redirect(['action' => 'index', '?' => ['tab' => 'list']]);
+    }
+
+    private function createNextRecurringTask($originalTask)
+    {
+        $nextTask = $this->Tasks->newEmptyEntity();
+        
+        // 元のタスク情報をコピー
+        $nextTask->title = $originalTask->title;
+        $nextTask->description = $originalTask->description;
+        $nextTask->priority = $originalTask->priority;
+        $nextTask->is_recurring = true;
+        $nextTask->recurring_type = $originalTask->recurring_type;
+        $nextTask->recurring_interval = $originalTask->recurring_interval ?? 1;
+        $nextTask->completed = false;
+        $nextTask->parent_id = $originalTask->parent_id;
+
+        // 次回の日付を計算
+        $interval = $originalTask->recurring_interval ?? 1;
+        
+        if ($originalTask->start_date) {
+            $nextStartDate = new \DateTime($originalTask->start_date->toDateString());
+            switch ($originalTask->recurring_type) {
+                case 'daily':
+                    $nextStartDate->modify("+{$interval} day");
+                    break;
+                case 'weekly':
+                    $nextStartDate->modify("+{$interval} week");
+                    break;
+                case 'monthly':
+                    $nextStartDate->modify("+{$interval} month");
+                    break;
+            }
+            $nextTask->start_date = $nextStartDate->format('Y-m-d');
+        }
+
+        if ($originalTask->end_date) {
+            $nextEndDate = new \DateTime($originalTask->end_date->toDateString());
+            switch ($originalTask->recurring_type) {
+                case 'daily':
+                    $nextEndDate->modify("+{$interval} day");
+                    break;
+                case 'weekly':
+                    $nextEndDate->modify("+{$interval} week");
+                    break;
+                case 'monthly':
+                    $nextEndDate->modify("+{$interval} month");
+                    break;
+            }
+            $nextTask->end_date = $nextEndDate->format('Y-m-d');
+        }
+
+        $this->Tasks->save($nextTask);
     }
 
     public function edit($id = null)
