@@ -133,6 +133,9 @@ class DashboardController extends AppController
         //ガントチャート用のデータ（親タスクのみに修正）
         $this->set('ganttTasks', $this->getGanttTasks());
 
+        //通知用のデータ
+        $this->set('notifications', $this->getNotifications());
+
 
         //タスク追加処理
         if ($this->request->is('post')) {
@@ -434,5 +437,121 @@ class DashboardController extends AppController
         } else {
             echo json_encode(['success' => false]);
         }
+    }
+
+    private function getNotifications()
+    {
+        $now = \Cake\I18n\FrozenDate::now();
+        $threeDaysLater = $now->addDays(3);
+
+        // 親タスクのみを取得
+        $parentTasks = $this->Tasks->find('all', [
+            'conditions' => [
+                'Tasks.completed' => false,
+                'Tasks.parent_id IS' => null
+            ],
+            'contain' => ['ChildTasks']
+        ])->toArray();
+
+        $notifications = [];
+
+        foreach ($parentTasks as $task) {
+            if ($task->end_date) {
+                // 期限超過
+                if ($task->end_date < $now) {
+                    $daysOverdue = $now->diffInDays($task->end_date);
+                    $notifications[] = [
+                        'type' => 'overdue',
+                        'task_id' => $task->id,
+                        'task_title' => $task->title,
+                        'end_date' => $task->end_date,
+                        'days' => $daysOverdue,
+                        'message' => "期限を{$daysOverdue}日超過しています",
+                        'priority' => $task->priority ?? 'medium'
+                    ];
+                }
+                // 期限当日
+                elseif ($task->end_date->toDateString() === $now->toDateString()) {
+                    $notifications[] = [
+                        'type' => 'today',
+                        'task_id' => $task->id,
+                        'task_title' => $task->title,
+                        'end_date' => $task->end_date,
+                        'message' => '今日が期限です',
+                        'priority' => $task->priority ?? 'medium'
+                    ];
+                }
+                // 期限3日以内
+                elseif ($task->end_date <= $threeDaysLater) {
+                    $daysUntil = $now->diffInDays($task->end_date);
+                    $notifications[] = [
+                        'type' => 'upcoming',
+                        'task_id' => $task->id,
+                        'task_title' => $task->title,
+                        'end_date' => $task->end_date,
+                        'days' => $daysUntil,
+                        'message' => "期限まであと{$daysUntil}日です",
+                        'priority' => $task->priority ?? 'medium'
+                    ];
+                }
+            }
+
+            // サブタスクの通知も追加
+            foreach ($task->child_tasks as $subtask) {
+                if (!$subtask->completed && $subtask->end_date) {
+                    // 期限超過
+                    if ($subtask->end_date < $now) {
+                        $daysOverdue = $now->diffInDays($subtask->end_date);
+                        $notifications[] = [
+                            'type' => 'overdue',
+                            'task_id' => $subtask->id,
+                            'task_title' => '┗ ' . $subtask->title,
+                            'end_date' => $subtask->end_date,
+                            'days' => $daysOverdue,
+                            'message' => "期限を{$daysOverdue}日超過しています",
+                            'priority' => $subtask->priority ?? 'medium'
+                        ];
+                    }
+                    // 期限当日
+                    elseif ($subtask->end_date->toDateString() === $now->toDateString()) {
+                        $notifications[] = [
+                            'type' => 'today',
+                            'task_id' => $subtask->id,
+                            'task_title' => '┗ ' . $subtask->title,
+                            'end_date' => $subtask->end_date,
+                            'message' => '今日が期限です',
+                            'priority' => $subtask->priority ?? 'medium'
+                        ];
+                    }
+                    // 期限3日以内
+                    elseif ($subtask->end_date <= $threeDaysLater) {
+                        $daysUntil = $now->diffInDays($subtask->end_date);
+                        $notifications[] = [
+                            'type' => 'upcoming',
+                            'task_id' => $subtask->id,
+                            'task_title' => '┗ ' . $subtask->title,
+                            'end_date' => $subtask->end_date,
+                            'days' => $daysUntil,
+                            'message' => "期限まであと{$daysUntil}日です",
+                            'priority' => $subtask->priority ?? 'medium'
+                        ];
+                    }
+                }
+            }
+        }
+
+        // 優先度と期限で並び替え（期限超過→当日→近日、優先度高→中→低）
+        usort($notifications, function($a, $b) {
+            $typeOrder = ['overdue' => 1, 'today' => 2, 'upcoming' => 3];
+            $priorityOrder = ['high' => 1, 'medium' => 2, 'low' => 3];
+            
+            if ($typeOrder[$a['type']] != $typeOrder[$b['type']]) {
+                return $typeOrder[$a['type']] - $typeOrder[$b['type']];
+            }
+            
+            return $priorityOrder[$a['priority']] - $priorityOrder[$b['priority']];
+        });
+
+        return $notifications;
     }
 }
