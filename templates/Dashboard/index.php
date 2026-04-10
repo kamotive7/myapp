@@ -372,6 +372,9 @@
       <button id="main-form-toggle-btn" onclick="toggleMainForm()" style="background: #4CAF50; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 15px; display: inline-flex; align-items: center; gap: 8px; line-height: 1;">
         <span id="main-form-icon">+</span> <span>新しいタスクを追加</span>
       </button>
+      <a href="<?= $this->Url->build(['action' => 'exportCsv']) ?>" style="background: #2196F3; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 15px; display: inline-flex; align-items: center; gap: 8px; line-height: 1; text-decoration: none; margin-left: 10px;">
+        <span>📥</span> <span>CSVエクスポート</span>
+      </a>
     </div>
 
     <div id="main-task-form" class="task-form" style="display: none; background: var(--task-form-bg); padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid var(--border-color);">

@@ -611,4 +611,102 @@ class DashboardController extends AppController
 
         return $notifications;
     }
+
+    public function exportCsv()
+    {
+        $this->autoRender = false;
+        
+        // 親タスクとサブタスクを取得
+        $tasks = $this->Tasks->find('all', [
+            'conditions' => ['Tasks.parent_id IS' => null],
+            'contain' => ['ChildTasks'],
+            'order' => ['Tasks.created' => 'DESC']
+        ])->toArray();
+
+        // CSVヘッダー
+        $csvData = [];
+        $csvData[] = [
+            'タスク名',
+            '概要',
+            '優先度',
+            '開始日',
+            '終了日',
+            '完了状態',
+            '進捗率',
+            '繰り返し',
+            '作成日'
+        ];
+
+        // データ行を追加
+        foreach ($tasks as $task) {
+            // 進捗率を計算
+            if (!empty($task->child_tasks)) {
+                $totalSubtasks = count($task->child_tasks);
+                $completedSubtasks = count(array_filter($task->child_tasks, fn($st) => $st->completed));
+                $progress = $totalSubtasks > 0 ? round(($completedSubtasks / $totalSubtasks) * 100) : 0;
+            } else {
+                $progress = $task->completed ? 100 : 0;
+            }
+
+            // 繰り返し設定
+            $recurring = '';
+            if ($task->is_recurring) {
+                $recurringLabels = ['daily' => '毎日', 'weekly' => '毎週', 'monthly' => '毎月'];
+                $label = $recurringLabels[$task->recurring_type] ?? '';
+                $interval = $task->recurring_interval ?? 1;
+                if ($interval > 1) {
+                    $recurring = "{$interval}日ごと";
+                    if ($task->recurring_type === 'weekly') $recurring = "{$interval}週ごと";
+                    if ($task->recurring_type === 'monthly') $recurring = "{$interval}ヶ月ごと";
+                } else {
+                    $recurring = $label;
+                }
+            }
+
+            // 親タスク
+            $csvData[] = [
+                $task->title,
+                $task->description ?? '',
+                $task->priority ? ['high' => '高', 'medium' => '中', 'low' => '低'][$task->priority] : '中',
+                $task->start_date ? $task->start_date->format('Y/m/d') : '',
+                $task->end_date ? $task->end_date->format('Y/m/d') : '',
+                $task->completed ? '完了' : '未完了',
+                $progress . '%',
+                $recurring,
+                $task->created->format('Y/m/d H:i')
+            ];
+
+            // サブタスク
+            foreach ($task->child_tasks as $subtask) {
+                $csvData[] = [
+                    '  ┗ ' . $subtask->title,
+                    $subtask->description ?? '',
+                    $subtask->priority ? ['high' => '高', 'medium' => '中', 'low' => '低'][$subtask->priority] : '中',
+                    $subtask->start_date ? $subtask->start_date->format('Y/m/d') : '',
+                    $subtask->end_date ? $subtask->end_date->format('Y/m/d') : '',
+                    $subtask->completed ? '完了' : '未完了',
+                    $subtask->completed ? '100%' : '0%',
+                    '',
+                    $subtask->created->format('Y/m/d H:i')
+                ];
+            }
+        }
+
+        // CSV出力
+        $filename = 'tasks_' . date('Ymd_His') . '.csv';
+        
+        header('Content-Type: text/csv; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        
+        // BOM付きUTF-8で出力（Excelで文字化けしないように）
+        echo "\xEF\xBB\xBF";
+        
+        $output = fopen('php://output', 'w');
+        foreach ($csvData as $row) {
+            fputcsv($output, $row);
+        }
+        fclose($output);
+        
+        exit;
+    }
 }
